@@ -22,8 +22,8 @@ return new class extends Migration
             $table->foreignId('subarea_id')->constrained('subareas');
             $table->foreignId('asunto_id')->constrained('asuntos');
             $table->foreignId('tipo_solicitud_id')->constrained('tipo_solicituds');
-            $table->foreignId('categoria_servicio_id')->constrained('categoria_servicios');
-            $table->foreignId('status_id')->constrained('statuses');
+            $table->foreignId('categoria_servicio_id')->nullable()->constrained('categoria_servicios');
+            $table->foreignId('status_id')->nullable()->constrained('statuses');
             $table->foreignId('tecnico_id')->nullable()->constrained('tecnicos');
             $table->text('incidencia_real')->nullable();
             $table->text('servicio_realizado')->nullable();

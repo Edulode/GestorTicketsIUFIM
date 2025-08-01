@@ -16,31 +16,26 @@ use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $tickets = Ticket::all();
+        return view('tickets.index', compact('tickets'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        return view('tickets.create', [
-            'ciclos' => Ciclo::all(),
-            'areas' => Area::all(),
-            'subareas' => Subarea::all(),
-            'usuarios' => Usuario::all(),
-            'tipos_solicitud' => TipoSolicitud::all(),
-            'tipos' => Tipo::all(),
-            'asuntos' => Asunto::all(),
-            'categorias_servicio' => CategoriaServicio::all(),
-            'statuses' => Status::all(),
-            'tecnicos' => Tecnico::all()
-        ]);
+        $ciclos = Ciclo::all();
+        $tipos = Tipo::all();
+        $areas = Area::all();
+        $usuarios = Usuario::all();
+        $subareas = Subarea::all();
+        $asuntos = Asunto::all();
+        $tipoSolicitudes = TipoSolicitud::all();
+        $categoriasServicio = CategoriaServicio::all();
+        $statuses = Status::all();
+        $tecnicos = Tecnico::all();
+
+        return view('tickets.create', compact('ciclos', 'tipos', 'areas', 'usuarios', 'subareas', 'asuntos', 'tipoSolicitudes', 'categoriasServicio', 'statuses', 'tecnicos'));
     }
 
     /**
@@ -48,53 +43,74 @@ class TicketController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'ciclo_id' => 'required|exists:ciclos,id',
-            'tipo_id' => 'required|exists:tipos,id',
-            'fecha' => 'required|date',
-            'area_id' => 'required|exists:areas,id',
-            'usuario_id' => 'required|exists:usuarios,id',
-            'solicitud' => 'required|string',
-            'subarea_id' => 'required|exists:subareas,id',
-            'asunto_id' => 'required|exists:asuntos,id',
-            'tipo_solicitud_id' => 'required|exists:tipos_solicitud,id',
-            'categoria_servicio_id' => 'required|exists:categorias_servicio,id',
-            'status_id' => 'required|exists:statuses,id',
-            'tecnico_id' => 'nullable|exists:tecnicos,id',
-            'incidencia_real' => 'nullable|string',
-            'servicio_realizado' => 'nullable|string',
-            'fecha_atencion' => 'nullable|date',
-            'notas' => 'nullable|string',
-            'observaciones' => 'nullable|string',
+        Ticket::create([
+            'ciclo_id' => $request->ciclo_id,
+            'tipo_id' => $request->tipo_id,
+            'fecha' => $request->fecha,
+            'area_id' => $request->area_id,
+            'usuario_id' => $request->usuario_id,
+            'solicitud' => $request->solicitud,
+            'subarea_id' => $request->subarea_id,
+            'asunto_id' => $request->asunto_id,
+            'tipo_solicitud_id' => $request->tipo_solicitud_id,
+            'categoria_servicio_id' => $request->categoria_servicio_id->nullable(),
+            'status_id' => $request->status_id->nullable(),
+            'tecnico_id' => $request->tecnico_id->nullable(),
+            'incidencia_real' => $request->incidencia_real->nullable(),
+            'servicio_realizado' => $request->servicio_realizado->nullable(),
+            'fecha_atencion' => $request->fecha_atencion->nullable(),
+            'notas' => $request->notas->nullable(),
+            'observaciones' => $request->observaciones->nullable(),
         ]);
-
-        Ticket::create($request->all());
-
-        return redirect()->route('tickets.create')->with('success', 'Ticket creado con éxito');
+        return redirect()->route('tickets.index')->with('success', 'Ticket created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        //
+        $ticket = Ticket::with(['ciclo', 'tipo', 'area', 'usuario', 'subarea', 'asunto', 'tipoSolicitud', 'categoriaServicio', 'status', 'tecnico'])->findOrFail($id);
+        return view('tickets.show', compact('ticket'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
-        //
+        $ticket = Ticket::findOrFail($id);
+        $ciclos = Ciclo::all();
+        $tipos = Tipo::all();
+        $areas = Area::all();
+        $usuarios = Usuario::all();
+        $subareas = Subarea::all();
+        $asuntos = Asunto::all();
+        $tipoSolicitudes = TipoSolicitud::all();
+        $categoriasServicio = CategoriaServicio::all();
+        $statuses = Status::all();
+        $tecnicos = Tecnico::all();
+
+        return view('tickets.edit', compact('ticket', 'ciclos', 'tipos', 'areas', 'usuarios', 'subareas', 'asuntos', 'tipoSolicitudes', 'categoriasServicio', 'statuses', 'tecnicos'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        //
+        $ticket = Ticket::findOrFail($id);
+        $ticket->update([
+            'ciclo_id' => $request->ciclo_id,
+            'tipo_id' => $request->tipo_id,
+            'fecha' => $request->fecha,
+            'area_id' => $request->area_id,
+            'usuario_id' => $request->usuario_id,
+            'solicitud' => $request->solicitud,
+            'subarea_id' => $request->subarea_id,
+            'asunto_id' => $request->asunto_id,
+            'tipo_solicitud_id' => $request->tipo_solicitud_id,
+            'categoria_servicio_id' => $request->categoria_servicio_id->nullable(),
+            'status_id' => $request->status_id->nullable(),
+            'tecnico_id' => $request->tecnico_id->nullable(),
+            'incidencia_real' => $request->incidencia_real->nullable(),
+            'servicio_realizado' => $request->servicio_realizado->nullable(),
+            'fecha_atencion' => $request->fecha_atencion->nullable(),
+            'notas' => $request->notas->nullable(),
+            'observaciones' => $request->observaciones->nullable(),
+        ]);
+        return redirect()->route('tickets.index')->with('success', 'Ticket updated successfully.');
     }
 
     /**
@@ -102,6 +118,8 @@ class TicketController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $ticket = Ticket::findOrFail($id);
+        $ticket->delete();
+        return redirect()->route('tickets.index')->with('success', 'Ticket deleted successfully.');
     }
 }
