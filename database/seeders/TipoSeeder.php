@@ -15,8 +15,8 @@ class TipoSeeder extends Seeder
     public function run(): void
     {
         DB::table('tipos')->insert([
-            ['tipo' => 'Interno'],
             ['tipo' => 'Externo'],
+            ['tipo' => 'Interno'],
         ]);
     }
 }

@@ -15,10 +15,10 @@ class SubareaSeeder extends Seeder
     public function run(): void
     {
         DB::table('subareas')->insert([
-            ['subarea' => 'Soporte Técnico', 'area_id' => 1],
-            ['subarea' => 'Administración de Sistemas', 'area_id' => 2],
-            ['subarea' => 'Desarrollo de Software', 'area_id' => 3],
-            ['subarea' => 'Redes y Comunicaciones', 'area_id' => 4],
+            ['subarea' => 'Clínica 1', 'area_id' => 1],
+            ['subarea' => 'Prepa ', 'area_id' => 2],
+            ['subarea' => 'Direccción', 'area_id' => 3],
+            ['subarea' => 'Bilbioteca', 'area_id' => 4],
         ]);
     }
 }

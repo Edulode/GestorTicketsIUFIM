@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('nombre');
             $table->string('apellido_paterno');
             $table->string('apellido_materno');
+            $table->foreignId('area_id')->constrained('areas');
             $table->boolean('status')->default(true);
             $table->timestamps();
         });

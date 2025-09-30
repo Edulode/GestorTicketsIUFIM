@@ -23,9 +23,7 @@ const showingNavigationDropdown = ref(false);
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
                                 <Link :href="route('dashboard')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800"
-                                    />
+                                    <img src="/images/logo.png" alt="Instituto Universitario Franco Ingles de Mexico logo" class="block h-20 w-auto fill-current text-gray-600" />
                                 </Link>
                             </div>
 
@@ -34,10 +32,10 @@ const showingNavigationDropdown = ref(false);
                                 class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
                             >
                                 <NavLink
-                                    :href="route('dashboard')"
+                                    :href="route('tickets.index')" target="_self"
                                     :active="route().current('dashboard')"
                                 >
-                                    Dashboard
+                                    Tickets
                                 </NavLink>
                             </div>
                         </div>
@@ -71,11 +69,6 @@ const showingNavigationDropdown = ref(false);
                                     </template>
 
                                     <template #content>
-                                        <DropdownLink
-                                            :href="route('profile.edit')"
-                                        >
-                                            Profile
-                                        </DropdownLink>
                                         <DropdownLink
                                             :href="route('logout')"
                                             method="post"
