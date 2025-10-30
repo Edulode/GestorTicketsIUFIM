@@ -12,16 +12,28 @@
                 <p class="mt-2 text-sm text-gray-700">Análisis dinámico y estadísticas del sistema de tickets</p>
             </div>
             <div class="flex space-x-3">
-                <a href="{{ route('admin.index') }}" 
-                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    <i class="fas fa-arrow-left mr-2"></i>
-                    Volver al Panel
-                </a>
-                <button id="btn-exportar" 
-                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    <i class="fas fa-download mr-2"></i>
-                    Exportar Reporte
-                </button>
+                <div class="relative">
+                    <button id="btn-exportar" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <i class="fas fa-download mr-2"></i>
+                        Exportar Reporte
+                    </button>
+                    <!-- Menú desplegable de exportación -->
+                    <div id="export-menu" class="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                        <div class="py-1">
+                            <button onclick="exportarExcel()" 
+                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center">
+                                <i class="fas fa-file-excel mr-3 text-green-600"></i>
+                                Exportar a Excel (.xlsx)
+                            </button>
+                            <button onclick="exportarCSV()" 
+                                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center">
+                                <i class="fas fa-file-csv mr-3 text-blue-600"></i>
+                                Exportar a CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -267,8 +279,13 @@
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- Librerías para exportación a Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <script>
 let charts = {};
+let currentData = null; // Almacenar datos actuales para exportación
 
 document.addEventListener('DOMContentLoaded', function() {
     // Cargar datos iniciales
@@ -280,8 +297,17 @@ document.addEventListener('DOMContentLoaded', function() {
         cargarDatos();
     });
     
-    // Event listener para exportar
-    document.getElementById('btn-exportar').addEventListener('click', exportarDatos);
+    // Event listener para menú desplegable de exportación
+    document.getElementById('btn-exportar').addEventListener('click', function(e) {
+        e.stopPropagation();
+        const menu = document.getElementById('export-menu');
+        menu.classList.toggle('hidden');
+    });
+    
+    // Cerrar menú al hacer clic fuera
+    document.addEventListener('click', function() {
+        document.getElementById('export-menu').classList.add('hidden');
+    });
 });
 
 function cargarDatos() {
@@ -305,6 +331,7 @@ function cargarDatos() {
             return response.json();
         })
         .then(data => {
+            currentData = data; // Almacenar datos para exportación
             actualizarEstadisticas(data.estadisticas);
             actualizarGraficasDinamicas(data.dinamicas);
             actualizarGraficasFijas(data.fijas);
@@ -647,18 +674,301 @@ function actualizarTicketsPendientes(ticketsPendientes) {
     container.innerHTML = html;
 }
 
-function exportarDatos() {
-    const formData = new FormData(document.getElementById('filtros-form'));
-    const params = new URLSearchParams(formData);
+// ========== FUNCIONES DE EXPORTACIÓN PROFESIONALES ==========
+
+function exportarExcel() {
+    if (!currentData) {
+        alert('Primero debe generar un reporte antes de exportar');
+        return;
+    }
     
-    // Crear un enlace temporal para descargar
-    const url = `/reportes/exportar?${params}`;
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `reporte_tickets_${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Mostrar indicador de procesamiento
+    mostrarIndicadorExportacion('Generando archivo Excel...');
+    
+    try {
+        // Crear un nuevo libro de trabajo
+        const workbook = XLSX.utils.book_new();
+        
+        // 1. Hoja de Estadísticas Generales
+        const statsData = [
+            ['ESTADÍSTICAS GENERALES DEL REPORTE'],
+            [''],
+            ['Métrica', 'Valor'],
+            ['Total de Tickets', currentData.estadisticas.total_tickets],
+            ['Tickets Resueltos', currentData.estadisticas.tickets_completados],
+            ['Tickets Pendientes', currentData.estadisticas.tickets_pendientes],
+            ['Tiempo Promedio de Resolución (horas)', currentData.estadisticas.tiempo_promedio_resolucion],
+            [''],
+            ['Período de Análisis'],
+            ['Fecha Inicio', document.getElementById('fecha_inicio').value],
+            ['Fecha Fin', document.getElementById('fecha_fin').value],
+            ['Ciclo Seleccionado', document.getElementById('ciclo_id').selectedOptions[0]?.text || 'Todos los ciclos']
+        ];
+        
+        const statsSheet = XLSX.utils.aoa_to_sheet(statsData);
+        XLSX.utils.book_append_sheet(workbook, statsSheet, 'Estadísticas');
+        
+        // 2. Hoja de Tickets por Área (Dinámico)
+        if (currentData.dinamicas.areas) {
+            const areasData = [
+                ['TICKETS POR ÁREA (PERÍODO SELECCIONADO)'],
+                [''],
+                ['Área', 'Cantidad de Tickets', 'Porcentaje']
+            ];
+            
+            const totalAreas = Object.values(currentData.dinamicas.areas).reduce((a, b) => a + b, 0);
+            Object.entries(currentData.dinamicas.areas).forEach(([area, cantidad]) => {
+                const porcentaje = ((cantidad / totalAreas) * 100).toFixed(2);
+                areasData.push([area, cantidad, porcentaje + '%']);
+            });
+            
+            const areasSheet = XLSX.utils.aoa_to_sheet(areasData);
+            XLSX.utils.book_append_sheet(workbook, areasSheet, 'Áreas - Dinámico');
+        }
+        
+        // 3. Hoja de Tipos de Solicitud (Dinámico)
+        if (currentData.dinamicas.tipos) {
+            const tiposData = [
+                ['TIPOS DE SOLICITUD MÁS FRECUENTES (PERÍODO SELECCIONADO)'],
+                [''],
+                ['Tipo de Solicitud', 'Cantidad', 'Porcentaje']
+            ];
+            
+            const totalTipos = Object.values(currentData.dinamicas.tipos).reduce((a, b) => a + b, 0);
+            Object.entries(currentData.dinamicas.tipos).forEach(([tipo, cantidad]) => {
+                const porcentaje = ((cantidad / totalTipos) * 100).toFixed(2);
+                tiposData.push([tipo, cantidad, porcentaje + '%']);
+            });
+            
+            const tiposSheet = XLSX.utils.aoa_to_sheet(tiposData);
+            XLSX.utils.book_append_sheet(workbook, tiposSheet, 'Tipos - Dinámico');
+        }
+        
+        // 4. Hoja de Lugares de Incidencia (Dinámico)
+        if (currentData.dinamicas.lugares) {
+            const lugaresData = [
+                ['LUGARES DE INCIDENCIA (PERÍODO SELECCIONADO)'],
+                [''],
+                ['Lugar', 'Incidencias', 'Porcentaje']
+            ];
+            
+            const totalLugares = Object.values(currentData.dinamicas.lugares).reduce((a, b) => a + b, 0);
+            Object.entries(currentData.dinamicas.lugares).forEach(([lugar, cantidad]) => {
+                const porcentaje = ((cantidad / totalLugares) * 100).toFixed(2);
+                lugaresData.push([lugar, cantidad, porcentaje + '%']);
+            });
+            
+            const lugaresSheet = XLSX.utils.aoa_to_sheet(lugaresData);
+            XLSX.utils.book_append_sheet(workbook, lugaresSheet, 'Lugares - Dinámico');
+        }
+        
+        // 5. Hoja de Categorías de Servicio (Dinámico)
+        if (currentData.dinamicas.categorias) {
+            const categoriasData = [
+                ['CATEGORÍAS DE SERVICIO - TICKETS RESUELTOS (PERÍODO SELECCIONADO)'],
+                [''],
+                ['Categoría', 'Tickets Resueltos', 'Porcentaje']
+            ];
+            
+            const totalCategorias = Object.values(currentData.dinamicas.categorias).reduce((a, b) => a + b, 0);
+            Object.entries(currentData.dinamicas.categorias).forEach(([categoria, cantidad]) => {
+                const porcentaje = ((cantidad / totalCategorias) * 100).toFixed(2);
+                categoriasData.push([categoria, cantidad, porcentaje + '%']);
+            });
+            
+            const categoriasSheet = XLSX.utils.aoa_to_sheet(categoriasData);
+            XLSX.utils.book_append_sheet(workbook, categoriasSheet, 'Categorías - Dinámico');
+        }
+        
+        // 6. Hoja de Análisis General del Sistema
+        if (currentData.fijas.areas_mas_solicitan) {
+            const areasGeneralData = [
+                ['ÁREAS QUE MÁS SOLICITAN (HISTÓRICO COMPLETO)'],
+                [''],
+                ['Ranking', 'Área', 'Total de Tickets']
+            ];
+            
+            let ranking = 1;
+            Object.entries(currentData.fijas.areas_mas_solicitan).forEach(([area, cantidad]) => {
+                areasGeneralData.push([ranking++, area, cantidad]);
+            });
+            
+            const areasGeneralSheet = XLSX.utils.aoa_to_sheet(areasGeneralData);
+            XLSX.utils.book_append_sheet(workbook, areasGeneralSheet, 'Áreas - Histórico');
+        }
+        
+        // 7. Hoja de Tickets Pendientes
+        if (currentData.fijas.tickets_pendientes && currentData.fijas.tickets_pendientes.length > 0) {
+            const pendientesData = [
+                ['TICKETS PENDIENTES DE RESOLUCIÓN'],
+                [''],
+                ['ID', 'Asunto', 'Área', 'Estado', 'Fecha Creación', 'Días Pendiente']
+            ];
+            
+            currentData.fijas.tickets_pendientes.forEach(ticket => {
+                pendientesData.push([
+                    ticket.id,
+                    ticket.asunto,
+                    ticket.area,
+                    ticket.status,
+                    ticket.fecha_creacion,
+                    Math.round(ticket.dias_pendiente)
+                ]);
+            });
+            
+            const pendientesSheet = XLSX.utils.aoa_to_sheet(pendientesData);
+            XLSX.utils.book_append_sheet(workbook, pendientesSheet, 'Tickets Pendientes');
+        }
+        
+        // Aplicar estilos y formato
+        aplicarEstilosExcel(workbook);
+        
+        // Generar y descargar el archivo
+        const fechaHora = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+        const nombreArchivo = `Reporte_Tickets_${fechaHora}.xlsx`;
+        
+        XLSX.writeFile(workbook, nombreArchivo);
+        
+        ocultarIndicadorExportacion();
+        mostrarNotificacionExito('Excel generado exitosamente: ' + nombreArchivo);
+        
+    } catch (error) {
+        console.error('Error al generar Excel:', error);
+        ocultarIndicadorExportacion();
+        alert('Error al generar el archivo Excel: ' + error.message);
+    }
+    
+    // Cerrar menú
+    document.getElementById('export-menu').classList.add('hidden');
+}
+
+function exportarPDF() {
+    mostrarIndicadorExportacion('Generando archivo PDF...');
+    
+    // Implementación básica de PDF
+    setTimeout(() => {
+        alert('Funcionalidad de PDF en desarrollo. Use Excel por ahora.');
+        ocultarIndicadorExportacion();
+        document.getElementById('export-menu').classList.add('hidden');
+    }, 1000);
+}
+
+function exportarCSV() {
+    if (!currentData) {
+        alert('Primero debe generar un reporte antes de exportar');
+        return;
+    }
+    
+    mostrarIndicadorExportacion('Generando archivo CSV...');
+    
+    try {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        
+        // Agregar estadísticas generales
+        csvContent += "ESTADÍSTICAS GENERALES\n";
+        csvContent += "Métrica,Valor\n";
+        csvContent += `Total de Tickets,${currentData.estadisticas.total_tickets}\n`;
+        csvContent += `Tickets Resueltos,${currentData.estadisticas.tickets_completados}\n`;
+        csvContent += `Tickets Pendientes,${currentData.estadisticas.tickets_pendientes}\n`;
+        csvContent += `Tiempo Promedio Resolución (h),${currentData.estadisticas.tiempo_promedio_resolucion}\n\n`;
+        
+        // Agregar tickets por área
+        if (currentData.dinamicas.areas) {
+            csvContent += "TICKETS POR ÁREA\n";
+            csvContent += "Área,Cantidad\n";
+            Object.entries(currentData.dinamicas.areas).forEach(([area, cantidad]) => {
+                csvContent += `"${area}",${cantidad}\n`;
+            });
+            csvContent += "\n";
+        }
+        
+        // Agregar tickets pendientes
+        if (currentData.fijas.tickets_pendientes) {
+            csvContent += "TICKETS PENDIENTES\n";
+            csvContent += "ID,Asunto,Área,Estado,Fecha Creación,Días Pendiente\n";
+            currentData.fijas.tickets_pendientes.forEach(ticket => {
+                csvContent += `${ticket.id},"${ticket.asunto}","${ticket.area}","${ticket.status}","${ticket.fecha_creacion}",${Math.round(ticket.dias_pendiente)}\n`;
+            });
+        }
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        
+        const fechaHora = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+        link.setAttribute("download", `Reporte_Tickets_${fechaHora}.csv`);
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        ocultarIndicadorExportacion();
+        mostrarNotificacionExito('CSV generado exitosamente');
+        
+    } catch (error) {
+        console.error('Error al generar CSV:', error);
+        ocultarIndicadorExportacion();
+        alert('Error al generar el archivo CSV: ' + error.message);
+    }
+    
+    document.getElementById('export-menu').classList.add('hidden');
+}
+
+function aplicarEstilosExcel(workbook) {
+    // Esta función puede expandirse para aplicar estilos más avanzados
+    // Por ahora, XLSX básico no soporta estilos complejos sin librerías adicionales
+}
+
+function mostrarIndicadorExportacion(mensaje) {
+    const indicator = document.createElement('div');
+    indicator.id = 'export-indicator';
+    indicator.className = 'fixed top-4 right-4 bg-blue-100 border border-blue-400 text-blue-700 px-6 py-4 rounded-lg shadow-lg z-50';
+    indicator.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-spinner fa-spin mr-3 text-blue-600"></i>
+            <div>
+                <p class="font-semibold">${mensaje}</p>
+                <p class="text-sm">Por favor espere...</p>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(indicator);
+}
+
+function ocultarIndicadorExportacion() {
+    const indicator = document.getElementById('export-indicator');
+    if (indicator) {
+        indicator.remove();
+    }
+}
+
+function mostrarNotificacionExito(mensaje) {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg shadow-lg z-50';
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-3 text-green-600"></i>
+            <div>
+                <p class="font-semibold">¡Éxito!</p>
+                <p class="text-sm">${mensaje}</p>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-ocultar después de 4 segundos
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 4000);
+}
+
+function exportarDatos() {
+    // Función legacy - redirigir a Excel
+    exportarExcel();
 }
 </script>
 @endsection
