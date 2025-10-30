@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Ciclo;
 use App\Models\Area;
 use App\Models\Subarea;
 use App\Models\Usuario;
@@ -13,19 +12,51 @@ use App\Models\Asunto;
 use App\Models\CategoriaServicio;
 use App\Models\Status;
 use App\Models\Tecnico;
+use App\Helpers\CicloHelper;
 
 class Ticket extends Model
 {
     protected $fillable = [
-    'ciclo_id', 'tipo_id', 'fecha', 'area_id', 'usuario_id', 'solicitud',
-    'subarea_id', 'asunto_id', 'tipo_solicitud_id', 'categoria_servicio_id',
-    'status_id', 'tecnico_id', 'incidencia_real', 'servicio_realizado',
-    'fecha_atencion', 'notas', 'observaciones'
+        'ciclo', 'tipo_id', 'fecha', 'area_id', 'usuario_id', 'solicitud',
+        'subarea_id', 'asunto_id', 'tipo_solicitud_id', 'categoria_servicio_id',
+        'status_id', 'tecnico_id', 'incidencia_real', 'servicio_realizado',
+        'fecha_atencion', 'notas', 'observaciones'
     ];
 
-    public function ciclo()
+    protected $casts = [
+        'fecha' => 'datetime',
+        'fecha_atencion' => 'datetime',
+    ];
+
+    /**
+     * Boot del modelo para asignar automáticamente el ciclo
+     */
+    protected static function boot()
     {
-        return $this->belongsTo(Ciclo::class);
+        parent::boot();
+
+        static::creating(function ($ticket) {
+            if (empty($ticket->ciclo)) {
+                $ticket->ciclo = CicloHelper::getCicloActual($ticket->fecha);
+            }
+        });
+    }
+
+    /**
+     * Obtiene la información del ciclo
+     */
+    public function getCicloInfoAttribute()
+    {
+        return CicloHelper::getInfoPorCodigo($this->ciclo);
+    }
+
+    /**
+     * Obtiene el nombre completo del ciclo
+     */
+    public function getCicloNombreAttribute()
+    {
+        $info = $this->ciclo_info;
+        return $info ? $info['nombre'] : $this->ciclo;
     }
 
     public function tipo()

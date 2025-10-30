@@ -1,6 +1,6 @@
 @extends('layouts.authenticated')
 
-@section('title', 'Gestión de Ciclos')
+@section('title', 'Sistema de Ciclos Automáticos')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -8,110 +8,150 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Gestión de Ciclos</h1>
-                <p class="mt-2 text-sm text-gray-700">Administra los ciclos académicos del sistema</p>
+                <h1 class="text-3xl font-bold text-gray-900">Sistema de Ciclos Automáticos</h1>
+                <p class="mt-2 text-sm text-gray-700">Los ciclos se generan automáticamente basados en la fecha actual</p>
             </div>
             <div class="flex space-x-3">
-                <a href="{{ route('ciclos.create') }}" 
-                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    <i class="fas fa-plus mr-2"></i>
-                    Nuevo Ciclo
-                </a>
+                <span class="inline-flex items-center px-3 py-2 border border-green-300 rounded-md shadow-sm text-sm font-medium text-green-700 bg-green-50">
+                    <i class="fas fa-calendar-check mr-2"></i>
+                    Ciclo Actual: {{ $cicloActual['codigo'] }}
+                </span>
             </div>
         </div>
     </div>
 
-    <!-- Estadísticas -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="h-8 w-8 bg-blue-100 rounded-md flex items-center justify-center">
-                            <i class="fas fa-calendar text-blue-600"></i>
-                        </div>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Total Ciclos</dt>
-                            <dd class="text-lg font-medium text-gray-900">{{ $ciclos->total() }}</dd>
-                        </dl>
-                    </div>
+    <!-- Información del Ciclo Actual -->
+    <div class="mb-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg text-white">
+        <div class="p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold">{{ $cicloActual['nombre'] }}</h2>
+                    <p class="text-blue-100 mt-1">{{ $cicloActual['periodo'] }} {{ $cicloActual['year'] }}</p>
+                    <p class="text-blue-100 text-sm mt-2">
+                        <i class="fas fa-calendar mr-1"></i>
+                        {{ $cicloActual['fecha_inicio']->format('d/m/Y') }} - {{ $cicloActual['fecha_fin']->format('d/m/Y') }}
+                    </p>
                 </div>
-            </div>
-        </div>
-        
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="h-8 w-8 bg-green-100 rounded-md flex items-center justify-center">
-                            <i class="fas fa-ticket-alt text-green-600"></i>
+                <div class="text-right">
+                    <div class="text-3xl font-bold">{{ $cicloActual['codigo'] }}</div>
+                    <div class="text-blue-100 text-sm">
+                        <i class="fas fa-clock mr-1"></i>
+                        {{ $cicloActual['dias_restantes'] }} días restantes
+                    </div>
+                    <div class="mt-2">
+                        <div class="bg-blue-400 rounded-full h-2 w-32">
+                            <div class="bg-white rounded-full h-2" style="width: {{ min(100, $cicloActual['progreso_porcentaje']) }}%"></div>
                         </div>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Con Tickets</dt>
-                            <dd class="text-lg font-medium text-gray-900">{{ $ciclos->where('tickets_count', '>', 0)->count() }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="h-8 w-8 bg-yellow-100 rounded-md flex items-center justify-center">
-                            <i class="fas fa-clock text-yellow-600"></i>
-                        </div>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Sin Tickets</dt>
-                            <dd class="text-lg font-medium text-gray-900">{{ $ciclos->where('tickets_count', 0)->count() }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="h-8 w-8 bg-purple-100 rounded-md flex items-center justify-center">
-                            <i class="fas fa-chart-line text-purple-600"></i>
-                        </div>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Promedio Tickets</dt>
-                            <dd class="text-lg font-medium text-gray-900">
-                                {{ $ciclos->count() > 0 ? number_format($ciclos->sum('tickets_count') / $ciclos->count(), 1) : 0 }}
-                            </dd>
-                        </dl>
+                        <span class="text-xs text-blue-100">{{ number_format($cicloActual['progreso_porcentaje'], 1) }}% completado</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    
-    <!-- Lista de Ciclos -->
+    <!-- Cómo Funciona -->
+    <div class="mb-8 bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">
+                <i class="fas fa-info-circle mr-2"></i>
+                ¿Cómo Funciona el Sistema Automático?
+            </h3>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="flex items-center mb-3">
+                        <div class="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <span class="text-blue-600 font-bold">B</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-900">Primer Semestre (B)</h4>
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        <strong>Enero - Junio:</strong> Si la fecha es antes o igual al 30 de junio, 
+                        el ciclo será el año actual seguido de "B" (ej: 2025B)
+                    </p>
+                </div>
+                
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <div class="flex items-center mb-3">
+                        <div class="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                            <span class="text-green-600 font-bold">A</span>
+                        </div>
+                        <h4 class="font-semibold text-gray-900">Segundo Semestre (A)</h4>
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        <strong>Julio - Diciembre:</strong> Si la fecha es después del 30 de junio, 
+                        el ciclo será el año actual seguido de "A" (ej: 2025A)
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div class="flex">
+                    <i class="fas fa-lightbulb text-yellow-600 mt-1 mr-3"></i>
+                    <div>
+                        <h5 class="font-medium text-yellow-800">Ventajas del Sistema Automático</h5>
+                        <ul class="mt-2 text-sm text-yellow-700 list-disc list-inside">
+                            <li>No necesitas crear ciclos manualmente</li>
+                            <li>Los tickets se asignan automáticamente al ciclo correcto</li>
+                            <li>No hay riesgo de duplicados o errores de asignación</li>
+                            <li>El sistema se adapta automáticamente a los cambios de año</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtro por Año -->
+    <div class="mb-6 bg-white shadow rounded-lg">
+        <div class="p-6">
+            <form method="GET" action="{{ route('ciclos.index') }}" class="flex items-center space-x-4">
+                <div class="flex-1">
+                    <label for="year" class="block text-sm font-medium text-gray-700 mb-1">Filtrar por Año</label>
+                    <select id="year" name="year" 
+                            class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                        @for($year = now()->year + 1; $year >= now()->year - 5; $year--)
+                            <option value="{{ $year }}" {{ $filtroAnio == $year ? 'selected' : '' }}>
+                                {{ $year }}
+                            </option>
+                        @endfor
+                    </select>
+                </div>
+                <div class="mt-6">
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-filter mr-2"></i>
+                        Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Ciclos del Año Seleccionado -->
     <div class="bg-white shadow overflow-hidden sm:rounded-md">
-        @if($ciclos->count() > 0)
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">
+                Ciclos del Año {{ $filtroAnio }}
+            </h3>
+        </div>
+        
+        @if(count($ciclosFiltrados) > 0)
             <ul class="divide-y divide-gray-200">
-                @foreach($ciclos as $ciclo)
-                    <li class="hover:bg-gray-50 transition-colors duration-150">
+                @foreach($ciclosFiltrados as $ciclo)
+                    @php
+                        $ticketsCount = $estadisticasCiclos[$ciclo['codigo']] ?? 0;
+                        $esActual = $ciclo['codigo'] === $cicloActual['codigo'];
+                    @endphp
+                    <li class="hover:bg-gray-50 transition-colors duration-150 {{ $esActual ? 'bg-blue-50' : '' }}">
                         <div class="px-6 py-4">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center flex-1">
                                     <!-- Avatar/Icono -->
                                     <div class="flex-shrink-0 h-12 w-12">
-                                        <div class="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
-                                            <i class="fas fa-calendar text-orange-600 text-lg"></i>
+                                        <div class="h-12 w-12 rounded-full {{ $esActual ? 'bg-blue-100' : 'bg-orange-100' }} flex items-center justify-center">
+                                            <i class="fas fa-calendar {{ $esActual ? 'text-blue-600' : 'text-orange-600' }} text-lg"></i>
                                         </div>
                                     </div>
                                     
@@ -119,30 +159,30 @@
                                     <div class="ml-4 flex-1">
                                         <div class="flex items-center">
                                             <h3 class="text-lg font-medium text-gray-900">
-                                                <a href="{{ route('ciclos.show', $ciclo) }}" class="hover:text-blue-600">
-                                                    {{ $ciclo->ciclo }}
+                                                <a href="{{ route('ciclos.show', $ciclo['codigo']) }}" class="hover:text-blue-600">
+                                                    {{ $ciclo['nombre'] }}
                                                 </a>
                                             </h3>
                                             <span class="ml-2 text-sm text-gray-500 font-mono">
-                                                #{{ str_pad($ciclo->id, 4, '0', STR_PAD_LEFT) }}
+                                                {{ $ciclo['codigo'] }}
                                             </span>
+                                            @if($esActual)
+                                                <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    <i class="fas fa-star mr-1"></i>
+                                                    ACTUAL
+                                                </span>
+                                            @endif
                                         </div>
                                         
                                         <div class="mt-1 flex items-center text-sm text-gray-500 space-x-4">
                                             <span>
                                                 <i class="fas fa-ticket-alt mr-1"></i>
-                                                {{ $ciclo->tickets_count }} tickets
+                                                {{ $ticketsCount }} tickets
                                             </span>
                                             <span>
-                                                <i class="fas fa-clock mr-1"></i>
-                                                Creado {{ $ciclo->created_at ? $ciclo->created_at->format('d/m/Y') : 'N/A' }}
+                                                <i class="fas fa-calendar-alt mr-1"></i>
+                                                {{ $ciclo['periodo'] }}
                                             </span>
-                                            @if($ciclo->updated_at && $ciclo->updated_at != $ciclo->created_at)
-                                                <span>
-                                                    <i class="fas fa-edit mr-1"></i>
-                                                    Actualizado {{ $ciclo->updated_at->diffForHumans() }}
-                                                </span>
-                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -150,7 +190,7 @@
                                 <!-- Badges y Acciones -->
                                 <div class="flex items-center space-x-3">
                                     <!-- Badge de Estado -->
-                                    @if($ciclo->tickets_count > 0)
+                                    @if($ticketsCount > 0)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Activo
@@ -164,23 +204,15 @@
                                     
                                     <!-- Acciones -->
                                     <div class="flex items-center space-x-2">
-                                        <a href="{{ route('ciclos.show', $ciclo) }}" 
+                                        <a href="{{ route('ciclos.show', $ciclo['codigo']) }}" 
                                            class="text-blue-600 hover:text-blue-900" title="Ver detalles">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('ciclos.edit', $ciclo) }}" 
-                                           class="text-indigo-600 hover:text-indigo-900" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        @if($ciclo->tickets_count == 0)
-                                            <button type="button" onclick="showDeleteModal({{ $ciclo->id }}, '{{ $ciclo->ciclo }}')" 
-                                                    class="text-red-600 hover:text-red-900" title="Eliminar">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        @else
-                                            <span class="text-gray-400" title="No se puede eliminar - tiene tickets asociados">
-                                                <i class="fas fa-trash"></i>
-                                            </span>
+                                        @if($ticketsCount > 0)
+                                            <a href="{{ route('tickets.index') }}?ciclo={{ $ciclo['codigo'] }}" 
+                                               class="text-green-600 hover:text-green-900" title="Ver tickets">
+                                                <i class="fas fa-ticket-alt"></i>
+                                            </a>
                                         @endif
                                     </div>
                                 </div>
@@ -189,114 +221,24 @@
                     </li>
                 @endforeach
             </ul>
-            
-            <!-- Paginación -->
-            @if($ciclos->hasPages())
-                <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-                    {{ $ciclos->links() }}
-                </div>
-            @endif
         @else
             <!-- Estado Vacío -->
             <div class="text-center py-12">
                 <div class="mx-auto h-12 w-12 text-gray-400">
                     <i class="fas fa-calendar text-4xl"></i>
                 </div>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">No hay ciclos</h3>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No hay información para este año</h3>
                 <p class="mt-1 text-sm text-gray-500">
-                    @if(request('search'))
-                        No se encontraron ciclos que coincidan con tu búsqueda.
-                    @else
-                        Comienza creando tu primer ciclo académico.
-                    @endif
+                    Selecciona un año diferente para ver los ciclos disponibles.
                 </p>
-                <div class="mt-6">
-                    @if(request('search'))
-                        <a href="{{ route('ciclos.index') }}" 
-                           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <i class="fas fa-times mr-2"></i>
-                            Limpiar búsqueda
-                        </a>
-                    @else
-                        <a href="{{ route('ciclos.create') }}" 
-                           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <i class="fas fa-plus mr-2"></i>
-                            Crear primer ciclo
-                        </a>
-                    @endif
-                </div>
             </div>
         @endif
     </div>
 </div>
 
-<!-- Modal de Confirmación de Eliminación -->
-<div id="deleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                <i class="fas fa-exclamation-triangle text-red-600"></i>
-            </div>
-            <div class="mt-3 text-center">
-                <h3 class="text-lg font-medium text-gray-900">Confirmar Eliminación</h3>
-                <div class="mt-4">
-                    <p class="text-sm text-gray-500">
-                        ¿Estás seguro de que deseas eliminar el ciclo <strong id="deleteModalCicloName"></strong>?
-                    </p>
-                    <p class="text-sm text-gray-500 mt-2">
-                        Esta acción no se puede deshacer.
-                    </p>
-                </div>
-                <div class="flex justify-center space-x-3 mt-6">
-                    <button type="button" onclick="closeDeleteModal()" 
-                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
-                        Cancelar
-                    </button>
-                    <form id="deleteForm" method="POST" class="inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" 
-                                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
-                            Sí, Eliminar
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
-let currentCicloId = null;
-
-function showDeleteModal(cicloId, cicloName) {
-    currentCicloId = cicloId;
-    document.getElementById('deleteModalCicloName').textContent = '"' + cicloName + '"';
-    document.getElementById('deleteForm').action = `/ciclos/${cicloId}`;
-    document.getElementById('deleteModal').classList.remove('hidden');
-}
-
-function closeDeleteModal() {
-    document.getElementById('deleteModal').classList.add('hidden');
-    currentCicloId = null;
-}
-
-// Cerrar modal al hacer clic fuera de él
-document.getElementById('deleteModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeDeleteModal();
-    }
-});
-
-// Cerrar modal con tecla Escape
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeDeleteModal();
-    }
-});
-
-// Auto-submit del formulario de filtros cuando cambia el ordenamiento
-document.getElementById('sort').addEventListener('change', function() {
+// Auto-submit del formulario cuando cambia el año
+document.getElementById('year').addEventListener('change', function() {
     this.form.submit();
 });
 </script>

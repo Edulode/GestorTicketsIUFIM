@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\Area;
 use App\Models\Asunto;
 use App\Models\CategoriaServicio;
-use App\Models\Ciclo;
 use App\Models\Status;
 use App\Models\Subarea;
 use App\Models\Tecnico;
@@ -27,7 +26,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            CicloSeeder::class,
             CategoriaServicioSeeder::class,
             AreaSeeder::class,
             SubareaSeeder::class,

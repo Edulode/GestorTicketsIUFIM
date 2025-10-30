@@ -18,7 +18,6 @@ use App\Models\Usuario;
 use App\Models\Ticket;
 use App\Models\Area;
 use App\Models\CategoriaServicio;
-use App\Models\Ciclo;
 use App\Models\Subarea;
 use App\Models\Tecnico;
 
@@ -49,7 +48,15 @@ Route::middleware('auth')->group(function () {
     Route::resource('usuarios', UsuariosController::class);
     Route::resource('areas', AreasController::class);
     Route::resource('categorias-servicio', CategoriaServicioController::class);
-    Route::resource('ciclos', CicloController::class);
+    
+    // Rutas especiales para ciclos (solo index y show, ya que son automáticos)
+    Route::get('ciclos', [CicloController::class, 'index'])->name('ciclos.index');
+    Route::get('ciclos/{codigo}', [CicloController::class, 'show'])->name('ciclos.show');
+    
+    // APIs para ciclos
+    Route::get('/api/ciclo-actual', [CicloController::class, 'getCicloActual'])->name('api.ciclo-actual');
+    Route::get('/api/todos-ciclos', [CicloController::class, 'getTodosCiclos'])->name('api.todos-ciclos');
+    
     Route::resource('subareas', SubareasController::class);
     Route::resource('tecnicos', TecnicoController::class);
     Route::resource('tipos_solicitud', TipoSolicitudController::class);

@@ -171,17 +171,17 @@
                         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <!-- Ciclo -->
                             <div>
-                                <label for="ciclo_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="ciclo" class="block text-sm font-medium text-gray-700 mb-2">
                                     <i class="fas fa-calendar-alt mr-1"></i>
                                     Ciclo *
                                 </label>
-                                <select name="ciclo_id" id="ciclo_id" 
+                                <select name="ciclo" id="ciclo" 
                                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
                                         required>
                                     <option value="">Seleccione un ciclo</option>
                                     @foreach($ciclos as $ciclo)
-                                        <option value="{{ $ciclo->id }}" {{ $ticket->ciclo_id == $ciclo->id ? 'selected' : '' }}>
-                                            {{ $ciclo->ciclo }}
+                                        <option value="{{ $ciclo['codigo'] }}" {{ $ticket->ciclo == $ciclo['codigo'] ? 'selected' : '' }}>
+                                            {{ $ciclo['nombre'] }} ({{ $ciclo['codigo'] }})
                                         </option>
                                     @endforeach
                                 </select>

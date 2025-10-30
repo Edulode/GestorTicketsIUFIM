@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Ticket;
 use App\Models\Area;
-use App\Models\Ciclo;
 use App\Models\Status;
 use App\Models\Tipo;
 use App\Models\TipoSolicitud;
+use App\Helpers\CicloHelper;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +16,7 @@ class ReportesController extends Controller
 {
     public function index()
     {
-        $ciclos = Ciclo::orderBy('created_at', 'desc')->get();
+        $ciclos = collect(CicloHelper::getTodosCiclos());
         $areas = Area::orderBy('area')->get();
         $tipos = Tipo::orderBy('tipo')->get();
         $tiposSolicitud = TipoSolicitud::orderBy('tipo_solicitud')->get();
@@ -43,7 +43,7 @@ class ReportesController extends Controller
         
         // Aplicar filtro de ciclo
         if ($cicloId) {
-            $query->where('ciclo_id', $cicloId);
+            $query->where('ciclo', $cicloId);
         }
         
         $tickets = $query->get();

@@ -3,113 +3,84 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Ciclo;
+use App\Helpers\CicloHelper;
+use App\Models\Ticket;
+use Carbon\Carbon;
 
 class CicloController extends Controller
 {
+    /**
+     * Muestra información sobre el sistema de ciclos automáticos
+     */
     public function index(Request $request)
     {
-        $query = Ciclo::withCount('tickets');
+        $cicloActual = CicloHelper::getInfoCicloActual();
+        $todosCiclos = CicloHelper::getTodosCiclos();
         
-        // Búsqueda
-        if ($request->filled('search')) {
-            $query->where('ciclo', 'like', '%' . $request->search . '%');
+        // Obtener estadísticas de tickets por ciclo
+        $estadisticasCiclos = [];
+        foreach ($todosCiclos as $ciclo) {
+            $ticketsCount = Ticket::where('ciclo', $ciclo['codigo'])->count();
+            $estadisticasCiclos[$ciclo['codigo']] = $ticketsCount;
         }
         
-        // Ordenamiento
-        $sort = $request->get('sort', 'ciclo_asc');
-        switch ($sort) {
-            case 'ciclo_desc':
-                $query->orderBy('ciclo', 'desc');
-                break;
-            case 'created_desc':
-                $query->orderBy('created_at', 'desc');
-                break;
-            case 'created_asc':
-                $query->orderBy('created_at', 'asc');
-                break;
-            case 'tickets_desc':
-                $query->orderBy('tickets_count', 'desc');
-                break;
-            case 'tickets_asc':
-                $query->orderBy('tickets_count', 'asc');
-                break;
-            default: // ciclo_asc
-                $query->orderBy('ciclo', 'asc');
-                break;
+        // Filtros
+        $filtroAnio = $request->get('year', $cicloActual['year']);
+        $ciclosFiltrados = array_filter($todosCiclos, function($ciclo) use ($filtroAnio) {
+            return $ciclo['year'] == $filtroAnio;
+        });
+        
+        return view('ciclos.index', compact('cicloActual', 'todosCiclos', 'ciclosFiltrados', 'estadisticasCiclos', 'filtroAnio'));
+    }
+
+    /**
+     * Muestra información detallada de un ciclo específico
+     */
+    public function show($codigo)
+    {
+        if (!CicloHelper::esCodigoValido($codigo)) {
+            abort(404, 'Ciclo no válido');
         }
         
-        $ciclos = $query->paginate(15)->withQueryString();
+        $ciclo = CicloHelper::getInfoPorCodigo($codigo);
+        $cicloActual = CicloHelper::getInfoCicloActual();
         
-        return view('ciclos.index', compact('ciclos'));
+        // Obtener tickets de este ciclo
+        $tickets = Ticket::where('ciclo', $codigo)
+            ->with(['status', 'area', 'usuario', 'tecnico'])
+            ->orderBy('fecha', 'desc')
+            ->paginate(10);
+        
+        // Estadísticas del ciclo
+        $estadisticas = [
+            'total_tickets' => Ticket::where('ciclo', $codigo)->count(),
+            'tickets_abiertos' => Ticket::where('ciclo', $codigo)->whereHas('status', function($q) {
+                $q->where('status', 'Abierto');
+            })->count(),
+            'tickets_proceso' => Ticket::where('ciclo', $codigo)->whereHas('status', function($q) {
+                $q->where('status', 'En Proceso');
+            })->count(),
+            'tickets_cerrados' => Ticket::where('ciclo', $codigo)->whereHas('status', function($q) {
+                $q->where('status', 'Cerrado');
+            })->count(),
+        ];
+        
+        return view('ciclos.show', compact('ciclo', 'cicloActual', 'tickets', 'estadisticas'));
     }
 
-    public function create()
+    /**
+     * API: Obtiene el ciclo actual
+     */
+    public function getCicloActual()
     {
-        return view('ciclos.create');
+        return response()->json(CicloHelper::getInfoCicloActual());
     }
 
-    public function store(Request $request)
+    /**
+     * API: Obtiene todos los ciclos disponibles
+     */
+    public function getTodosCiclos()
     {
-        $request->validate([
-            'ciclo' => 'required|string|max:255|unique:ciclos,ciclo',
-        ], [
-            'ciclo.required' => 'El nombre del ciclo es obligatorio.',
-            'ciclo.string' => 'El nombre del ciclo debe ser un texto válido.',
-            'ciclo.max' => 'El nombre del ciclo no puede tener más de 255 caracteres.',
-            'ciclo.unique' => 'Ya existe un ciclo con este nombre.',
-        ]);
-
-        Ciclo::create([
-            'ciclo' => $request->ciclo,
-        ]);
-        
-        return redirect()->route('ciclos.index')->with('success', 'Ciclo creado exitosamente.');
-    }
-
-    public function show(string $id)
-    {
-        $ciclo = Ciclo::with(['tickets.status'])->findOrFail($id);
-        return view('ciclos.show', compact('ciclo'));
-    }
-
-    public function edit(string $id)
-    {
-        $ciclo = Ciclo::with('tickets')->findOrFail($id);
-        return view('ciclos.edit', compact('ciclo'));
-    }
-
-    public function update(Request $request, string $id)
-    {
-        $ciclo = Ciclo::findOrFail($id);
-        
-        $request->validate([
-            'ciclo' => 'required|string|max:255|unique:ciclos,ciclo,' . $ciclo->id,
-        ], [
-            'ciclo.required' => 'El nombre del ciclo es obligatorio.',
-            'ciclo.string' => 'El nombre del ciclo debe ser un texto válido.',
-            'ciclo.max' => 'El nombre del ciclo no puede tener más de 255 caracteres.',
-            'ciclo.unique' => 'Ya existe un ciclo con este nombre.',
-        ]);
-
-        $ciclo->update([
-            'ciclo' => $request->ciclo,
-        ]);
-        
-        return redirect()->route('ciclos.index')->with('success', 'Ciclo actualizado exitosamente.');
-    }
-
-    public function destroy(string $id)
-    {
-        $ciclo = Ciclo::findOrFail($id);
-        
-        // Verificar que no tenga tickets asociados
-        if ($ciclo->tickets()->count() > 0) {
-            return redirect()->route('ciclos.index')->with('error', 'No se puede eliminar el ciclo porque tiene tickets asociados.');
-        }
-        
-        $ciclo->delete();
-        
-        return redirect()->route('ciclos.index')->with('success', 'Ciclo eliminado exitosamente.');
+        return response()->json(CicloHelper::getTodosCiclos());
     }
 }

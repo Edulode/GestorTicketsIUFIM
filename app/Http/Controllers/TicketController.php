@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 use App\Models\Ticket;
-use App\Models\Ciclo;
 use App\Models\Area;
 use App\Models\Subarea;
 use App\Models\Usuario;
@@ -12,6 +11,7 @@ use App\Models\Asunto;
 use App\Models\CategoriaServicio;
 use App\Models\Status;
 use App\Models\Tecnico;
+use App\Helpers\CicloHelper;
 use Illuminate\Http\Request;
 
 class TicketController extends Controller
@@ -118,7 +118,7 @@ class TicketController extends Controller
 
     public function create()
     {
-        $ciclos = Ciclo::all();
+        $ciclos = collect(CicloHelper::getTodosCiclos());
         $tipos = Tipo::all();
         $areas = Area::all();
         $usuarios = Usuario::all();
@@ -129,8 +129,8 @@ class TicketController extends Controller
         $statuses = Status::all();
         $tecnicos = Tecnico::all();
         
-        // Obtener el ciclo actual (el más reciente)
-        $cicloActual = Ciclo::orderBy('created_at', 'desc')->first();
+        // Obtener el ciclo actual automático
+        $cicloActual = CicloHelper::getInfoCicloActual();
 
         return view('tickets.create', compact('ciclos', 'tipos', 'areas', 'usuarios', 'subareas', 'asuntos', 'tipoSolicitudes', 'categoriasServicio', 'statuses', 'tecnicos', 'cicloActual'));
     }
@@ -148,16 +148,12 @@ class TicketController extends Controller
             'solicitud' => 'required|string|max:1000',
         ]);
 
-        // Obtener el ciclo actual si no se proporciona
-        $cicloId = $request->ciclo_id;
-        if (!$cicloId) {
-            $cicloActual = Ciclo::orderBy('created_at', 'desc')->first();
-            $cicloId = $cicloActual ? $cicloActual->id : null;
-        }
+        // Obtener el ciclo actual automático
+        $ciclo = $request->ciclo ?: CicloHelper::getCicloActual();
 
         // Crear el ticket con valores por defecto para campos requeridos
         Ticket::create([
-            'ciclo_id' => $cicloId,
+            'ciclo' => $ciclo,
             'tipo_id' => $request->tipo_id ?? 1, // Default a "Externo"
             'fecha' => $request->fecha ?? now(),
             'area_id' => $request->area_id,
@@ -181,14 +177,14 @@ class TicketController extends Controller
 
     public function show(string $id)
     {
-        $ticket = Ticket::with(['ciclo', 'tipo', 'area', 'usuario', 'subarea', 'asunto', 'tipoSolicitud', 'categoriaServicio', 'status', 'tecnico'])->findOrFail($id);
+        $ticket = Ticket::with(['tipo', 'area', 'usuario', 'subarea', 'asunto', 'tipoSolicitud', 'categoriaServicio', 'status', 'tecnico'])->findOrFail($id);
         return view('tickets.show', compact('ticket'));
     }
 
     public function edit(string $id)
     {
         $ticket = Ticket::findOrFail($id);
-        $ciclos = Ciclo::all();
+        $ciclos = collect(CicloHelper::getTodosCiclos());
         $tipos = Tipo::all();
         $areas = Area::all();
         $usuarios = Usuario::all();
@@ -206,7 +202,7 @@ class TicketController extends Controller
     {
         $ticket = Ticket::findOrFail($id);
         $ticket->update([
-            'ciclo_id' => $request->ciclo_id,
+            'ciclo' => $request->ciclo ?: CicloHelper::getCicloActual(),
             'tipo_id' => $request->tipo_id,
             'fecha' => $request->fecha,
             'area_id' => $request->area_id,
@@ -253,7 +249,7 @@ class TicketController extends Controller
      */
     public function completar(string $id)
     {
-        $ticket = Ticket::with(['ciclo', 'tipo', 'area', 'usuario', 'subarea', 'asunto', 'tipoSolicitud', 'categoriaServicio', 'status', 'tecnico'])->findOrFail($id);
+        $ticket = Ticket::with(['tipo', 'area', 'usuario', 'subarea', 'asunto', 'tipoSolicitud', 'categoriaServicio', 'status', 'tecnico'])->findOrFail($id);
         $tecnicos = Tecnico::orderBy('nombre')->get();
         $tipoSolicitudes = TipoSolicitud::with('categoriaServicio')->orderBy('tipo_solicitud')->get();
         $categoriasServicio = CategoriaServicio::orderBy('categoria_servicio')->get();

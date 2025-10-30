@@ -250,7 +250,7 @@
 
                     <div class="flex justify-between">
                         <span class="text-sm font-medium text-gray-700">Ciclo:</span>
-                        <span class="text-sm text-gray-900">{{ $ticket->ciclo->ciclo ?? 'No especificado' }}</span>
+                        <span class="text-sm text-gray-900">{{ $ticket->ciclo_nombre ?? $ticket->ciclo ?? 'No especificado' }}</span>
                     </div>
 
                     <div class="flex justify-between">

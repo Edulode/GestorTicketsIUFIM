@@ -29,7 +29,7 @@
                     <div>
                         <p class="text-sm font-medium text-blue-900">Ciclo Actual</p>
                         @if($cicloActual)
-                            <p class="text-lg font-bold text-blue-700">{{ $cicloActual->ciclo }}</p>
+                            <p class="text-lg font-bold text-blue-700">{{ $cicloActual['nombre'] ?? $cicloActual['codigo'] ?? 'No disponible' }}</p>
                         @else
                             <p class="text-lg font-bold text-gray-500">No hay ciclo definido</p>
                         @endif
@@ -92,7 +92,7 @@
         
         <!-- Campos ocultos con valores por defecto -->
         @if($cicloActual)
-            <input type="hidden" name="ciclo_id" value="{{ $cicloActual->id }}">
+            <input type="hidden" name="ciclo" value="{{ $cicloActual['codigo'] }}">
         @endif
         <input type="hidden" name="fecha" value="{{ date('Y-m-d') }}">
         <input type="hidden" name="status_id" value="1">
