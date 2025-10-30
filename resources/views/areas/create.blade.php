@@ -66,47 +66,12 @@
                     </div>
 
                     <div>
-                        <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
-                        <textarea id="descripcion" name="descripcion" rows="4" 
-                                  placeholder="Describe las responsabilidades y funciones principales del área..."
-                                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">{{ old('descripcion') }}</textarea>
-                        @error('descripcion')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                        <p class="mt-1 text-sm text-gray-500">Opcional. Proporcione una descripción detallada del área y sus responsabilidades.</p>
+                        
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Información Adicional -->
-        <div class="bg-white shadow rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    Información Adicional
-                </h3>
-            </div>
-            <div class="p-6">
-                <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-lightbulb text-blue-400"></i>
-                        </div>
-                        <div class="ml-3">
-                            <h4 class="text-sm font-medium text-blue-800">Consejos para crear áreas:</h4>
-                            <ul class="mt-2 text-sm text-blue-700 list-disc list-inside space-y-1">
-                                <li>Use nombres descriptivos y oficiales del área</li>
-                                <li>Evite abreviaciones que puedan ser confusas</li>
-                                <li>Una vez creada, podrá asignar usuarios y crear subáreas</li>
-                                <li>Las áreas se utilizarán para organizar tickets y usuarios</li>
-                                <li>Puede agregar una descripción detallada para mayor claridad</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Botones de Acción -->
         <div class="bg-white shadow rounded-lg">

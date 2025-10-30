@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Area;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 
 class AreasController extends Controller
@@ -16,7 +17,10 @@ class AreasController extends Controller
                     ->orderBy('area')
                     ->paginate(10);
 
-        return view('areas.index', compact('areas'));
+        // Obtener el total de usuarios de la tabla usuarios
+        $totalUsuarios = Usuario::count();
+
+        return view('areas.index', compact('areas', 'totalUsuarios'));
     }
 
     /**
@@ -61,13 +65,17 @@ class AreasController extends Controller
                                  ->limit(5)
                                  ->get();
 
-        // Obtener tickets del área
+        // Obtener tickets del área de forma más segura
         $ticketsRecientes = $area->usuarios()
-                                ->with('tickets.status', 'tickets.asunto', 'tickets.tipo')
+                                ->whereHas('tickets') // Solo usuarios que tienen tickets
+                                ->with(['tickets' => function($query) {
+                                    $query->with(['status', 'asunto', 'tipo', 'usuario'])
+                                          ->whereNotNull('created_at')
+                                          ->orderBy('created_at', 'desc');
+                                }])
                                 ->get()
                                 ->pluck('tickets')
                                 ->flatten()
-                                ->sortByDesc('created_at')
                                 ->take(10);
 
         return view('areas.show', compact('area', 'usuariosRecientes', 'ticketsRecientes'));

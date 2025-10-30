@@ -96,22 +96,18 @@
                                                     <h4 class="text-sm font-medium text-gray-900">
                                                         {{ $usuario->nombre }} {{ $usuario->apellido_paterno }} {{ $usuario->apellido_materno }}
                                                     </h4>
-                                                    @if($usuario->email)
-                                                        <p class="text-sm text-gray-600">{{ $usuario->email }}</p>
-                                                    @endif
+                                                    <p class="text-sm text-gray-600">ID: #{{ $usuario->id }}</p>
                                                 </div>
                                             </div>
                                             <div class="mt-2 flex items-center text-xs text-gray-500 space-x-4">
                                                 <span>
                                                     <i class="fas fa-calendar mr-1"></i>
-                                                    Registrado: {{ $usuario->created_at->format('d/m/Y') }}
+                                                    Registrado: {{ $usuario->created_at ? $usuario->created_at->format('d/m/Y') : 'No disponible' }}
                                                 </span>
-                                                @if($usuario->telefono)
                                                 <span>
-                                                    <i class="fas fa-phone mr-1"></i>
-                                                    {{ $usuario->telefono }}
+                                                    <i class="fas fa-toggle-{{ $usuario->status ? 'on' : 'off' }} mr-1"></i>
+                                                    {{ $usuario->status ? 'Activo' : 'Inactivo' }}
                                                 </span>
-                                                @endif
                                                 <span>
                                                     <i class="fas fa-ticket-alt mr-1"></i>
                                                     {{ $usuario->tickets->count() }} tickets
@@ -177,7 +173,7 @@
                                             <h4 class="text-sm font-medium text-gray-900">{{ $subarea->subarea }}</h4>
                                             <p class="text-xs text-gray-500 mt-1">
                                                 <i class="fas fa-calendar mr-1"></i>
-                                                {{ $subarea->created_at->format('d/m/Y') }}
+                                                {{ $subarea->created_at ? $subarea->created_at->format('d/m/Y') : 'No disponible' }}
                                             </p>
                                         </div>
                                         <a href="{{ route('subareas.show', $subarea->id) }}" 
@@ -230,21 +226,21 @@
                                                     #{{ $ticket->id }} - {{ $ticket->asunto->asunto ?? 'Sin asunto' }}
                                                 </h4>
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                                    {{ $ticket->status->status == 'Abierto' ? 'bg-green-100 text-green-800' : 
-                                                       ($ticket->status->status == 'En proceso' ? 'bg-yellow-100 text-yellow-800' : 
+                                                    {{ ($ticket->status && $ticket->status->status == 'Abierto') ? 'bg-green-100 text-green-800' : 
+                                                       (($ticket->status && $ticket->status->status == 'En proceso') ? 'bg-yellow-100 text-yellow-800' : 
                                                         'bg-red-100 text-red-800') }}">
                                                     {{ $ticket->status->status ?? 'Sin estado' }}
                                                 </span>
                                             </div>
-                                            <p class="mt-1 text-sm text-gray-600">{{ Str::limit($ticket->descripcion_problema ?? 'Sin descripción', 100) }}</p>
+                                            <p class="mt-1 text-sm text-gray-600">{{ Str::limit($ticket->solicitud ?? 'Sin descripción', 100) }}</p>
                                             <div class="mt-2 flex items-center text-xs text-gray-500 space-x-4">
                                                 <span>
                                                     <i class="fas fa-user mr-1"></i>
-                                                    {{ $ticket->usuario->nombre ?? 'Usuario desconocido' }}
+                                                    {{ $ticket->usuario ? ($ticket->usuario->nombre . ' ' . $ticket->usuario->apellido_paterno) : 'Usuario desconocido' }}
                                                 </span>
                                                 <span>
                                                     <i class="fas fa-calendar mr-1"></i>
-                                                    {{ $ticket->created_at->format('d/m/Y H:i') }}
+                                                    {{ $ticket->created_at ? $ticket->created_at->format('d/m/Y H:i') : 'No disponible' }}
                                                 </span>
                                                 @if($ticket->tipo)
                                                 <span>

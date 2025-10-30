@@ -84,7 +84,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate">Total Usuarios</dt>
-                            <dd class="text-lg font-medium text-gray-900">{{ $areas->sum('usuarios_count') }}</dd>
+                            <dd class="text-lg font-medium text-gray-900">{{ $totalUsuarios }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -121,7 +121,7 @@
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate">Promedio Usuarios</dt>
                             <dd class="text-lg font-medium text-gray-900">
-                                {{ $areas->total() > 0 ? round($areas->sum('usuarios_count') / $areas->total(), 1) : 0 }}
+                                {{ $areas->total() > 0 ? round($totalUsuarios / $areas->total(), 1) : 0 }}
                             </dd>
                         </dl>
                     </div>
@@ -146,16 +146,10 @@
                                 Área
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Descripción
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Usuarios
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Subáreas
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Fecha Creación
                             </th>
                             <th scope="col" class="relative px-6 py-3">
                                 <span class="sr-only">Acciones</span>
@@ -178,11 +172,6 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <div class="text-sm text-gray-900">
-                                        {{ $area->descripcion ?? 'Sin descripción' }}
-                                    </div>
-                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -199,12 +188,6 @@
                                         </span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-calendar mr-2"></i>
-                                        {{ $area->created_at ? $area->created_at->format('d/m/Y') : 'No disponible' }}
-                                    </div>
-                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('areas.show', $area->id) }}" 
@@ -215,10 +198,6 @@
                                            class="text-indigo-600 hover:text-indigo-900" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <button type="button" onclick="confirmarEliminacion({{ $area->id }}, '{{ $area->area }}')" 
-                                                class="text-red-600 hover:text-red-900" title="Eliminar">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -247,55 +226,4 @@
         @endif
     </div>
 </div>
-
-<!-- Modal de confirmación para eliminar -->
-<div id="modal-eliminar" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                <i class="fas fa-exclamation-triangle text-red-600"></i>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mt-2">¿Eliminar Área?</h3>
-            <div class="mt-2 px-7 py-3">
-                <p class="text-sm text-gray-500">
-                    Esta acción no se puede deshacer. Se eliminará permanentemente el área 
-                    <strong id="nombre-area"></strong> y todos sus datos asociados.
-                </p>
-            </div>
-            <div class="items-center px-4 py-3">
-                <form id="form-eliminar" method="POST" class="inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" 
-                            class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
-                        Eliminar
-                    </button>
-                </form>
-                <button onclick="cerrarModal()" 
-                        class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-24 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
-                    Cancelar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-function confirmarEliminacion(id, nombre) {
-    document.getElementById('nombre-area').textContent = nombre;
-    document.getElementById('form-eliminar').action = `/areas/${id}`;
-    document.getElementById('modal-eliminar').classList.remove('hidden');
-}
-
-function cerrarModal() {
-    document.getElementById('modal-eliminar').classList.add('hidden');
-}
-
-// Cerrar modal al hacer clic fuera
-document.getElementById('modal-eliminar').addEventListener('click', function(e) {
-    if (e.target === this) {
-        cerrarModal();
-    }
-});
-</script>
 @endsection

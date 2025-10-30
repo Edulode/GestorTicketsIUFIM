@@ -70,15 +70,7 @@
                         <p class="mt-1 text-sm text-gray-500">Nombre oficial del área organizacional.</p>
                     </div>
 
-                    <div>
-                        <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
-                        <textarea id="descripcion" name="descripcion" rows="4" 
-                                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">{{ old('descripcion', $area->descripcion) }}</textarea>
-                        @error('descripcion')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                        <p class="mt-1 text-sm text-gray-500">Descripción detallada del área y sus responsabilidades.</p>
-                    </div>
+                    
                 </div>
             </div>
         </div>
