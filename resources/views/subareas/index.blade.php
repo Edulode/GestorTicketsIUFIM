@@ -54,7 +54,7 @@
     @endif
 
     <!-- Estadísticas -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-4xl mx-auto">
         <div class="bg-white overflow-hidden shadow rounded-lg">
             <div class="p-5">
                 <div class="flex items-center">
@@ -113,67 +113,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-purple-500 rounded-md flex items-center justify-center">
-                            <i class="fas fa-calendar text-white text-sm"></i>
-                        </div>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Creadas Este Mes</dt>
-                            <dd class="text-lg font-medium text-gray-900">
-                                {{ $subareas->where('created_at', '>=', now()->startOfMonth())->count() }}
-                            </dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filtros -->
-    <div class="bg-white shadow rounded-lg mb-6">
-        <div class="px-6 py-4">
-            <form method="GET" action="{{ route('subareas.index') }}" class="flex items-center space-x-4">
-                <div class="flex-1">
-                    <label for="buscar" class="sr-only">Buscar subárea</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
-                        <input type="text" name="buscar" id="buscar" value="{{ request('buscar') }}"
-                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                               placeholder="Buscar por nombre de subárea...">
-                    </div>
-                </div>
-                <div class="flex-shrink-0">
-                    <select name="area" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                        <option value="">Todas las áreas</option>
-                        @foreach($subareas->pluck('area')->unique('id')->sortBy('area') as $area)
-                            <option value="{{ $area->id }}" {{ request('area') == $area->id ? 'selected' : '' }}>
-                                {{ $area->area }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <button type="submit" 
-                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    <i class="fas fa-filter mr-2"></i>
-                    Filtrar
-                </button>
-                @if(request('buscar') || request('area'))
-                    <a href="{{ route('subareas.index') }}" 
-                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                        <i class="fas fa-times mr-2"></i>
-                        Limpiar
-                    </a>
-                @endif
-            </form>
-        </div>
     </div>
 
     <!-- Tabla de Subáreas -->
@@ -193,12 +132,6 @@
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Área Padre
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Descripción
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Fecha Creación
                             </th>
                             <th scope="col" class="relative px-6 py-3">
                                 <span class="sr-only">Acciones</span>
@@ -229,17 +162,6 @@
                                         </span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <div class="text-sm text-gray-900">
-                                        {{ $subarea->descripcion ? Str::limit($subarea->descripcion, 50) : 'Sin descripción' }}
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-calendar mr-2"></i>
-                                        {{ $subarea->created_at->format('d/m/Y') }}
-                                    </div>
-                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('subareas.show', $subarea->id) }}" 
@@ -250,10 +172,6 @@
                                            class="text-indigo-600 hover:text-indigo-900" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <button type="button" onclick="confirmarEliminacion({{ $subarea->id }}, '{{ $subarea->subarea }}')" 
-                                                class="text-red-600 hover:text-red-900" title="Eliminar">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -282,55 +200,4 @@
         @endif
     </div>
 </div>
-
-<!-- Modal de confirmación para eliminar -->
-<div id="modal-eliminar" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                <i class="fas fa-exclamation-triangle text-red-600"></i>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mt-2">¿Eliminar Subárea?</h3>
-            <div class="mt-2 px-7 py-3">
-                <p class="text-sm text-gray-500">
-                    Esta acción no se puede deshacer. Se eliminará permanentemente la subárea 
-                    <strong id="nombre-subarea"></strong> y todos sus datos asociados.
-                </p>
-            </div>
-            <div class="items-center px-4 py-3">
-                <form id="form-eliminar" method="POST" class="inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" 
-                            class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
-                        Eliminar
-                    </button>
-                </form>
-                <button onclick="cerrarModal()" 
-                        class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-24 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
-                    Cancelar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-function confirmarEliminacion(id, nombre) {
-    document.getElementById('nombre-subarea').textContent = nombre;
-    document.getElementById('form-eliminar').action = `/subareas/${id}`;
-    document.getElementById('modal-eliminar').classList.remove('hidden');
-}
-
-function cerrarModal() {
-    document.getElementById('modal-eliminar').classList.add('hidden');
-}
-
-// Cerrar modal al hacer clic fuera
-document.getElementById('modal-eliminar').addEventListener('click', function(e) {
-    if (e.target === this) {
-        cerrarModal();
-    }
-});
-</script>
 @endsection
