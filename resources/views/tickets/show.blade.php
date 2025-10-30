@@ -43,11 +43,11 @@
                 </a>
                 
                 <!-- Botón Eliminar -->
-                <form action="{{ route('tickets.destroy', $ticket->id) }}" method="POST" class="inline">
+                <form action="{{ route('tickets.destroy', $ticket->id) }}" method="POST" class="inline" id="delete-form">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" 
-                            onclick="return confirm('¿Estás seguro de que quieres eliminar este ticket? Esta acción no se puede deshacer.')"
+                    <button type="button" 
+                            id="delete-button"
                             class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 focus:outline-none focus:border-red-700 focus:ring focus:ring-red-200 active:bg-red-600 disabled:opacity-25 transition">
                         <i class="fas fa-trash mr-2"></i>
                         Eliminar
@@ -356,7 +356,7 @@
     </div>
 </div>
 
-<!-- Estilos para impresión -->
+<!-- Estilos para impresión y modal profesional -->
 <style media="print">
     .no-print {
         display: none !important;
@@ -372,19 +372,254 @@
     }
 </style>
 
-<!-- JavaScript para funcionalidades adicionales -->
+<style>
+    /* Estilos para modal de eliminación profesional */
+    .modal-backdrop {
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.3s ease-out;
+    }
+    
+    .modal-enter {
+        animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    
+    .modal-danger {
+        border-top: 4px solid #dc2626;
+        background: linear-gradient(135deg, #ffffff 0%, #fef7f7 100%);
+    }
+    
+    .danger-icon-container {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        transform: translateY(0);
+        transition: all 0.2s ease;
+    }
+    
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+    }
+    
+    .btn-cancel {
+        background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+        transition: all 0.2s ease;
+    }
+    
+    .btn-cancel:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .pulse-danger {
+        animation: pulseDanger 2s infinite;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: scale(0.8) translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+    
+    @keyframes pulseDanger {
+        0%, 100% { 
+            box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+        }
+        50% { 
+            box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+        }
+    }
+</style>
+
+<!-- JavaScript para modal profesional de eliminación -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Confirmaciones para acciones críticas
-    const deleteButtons = document.querySelectorAll('form[action*="destroy"] button[type="submit"]');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            if (!confirm('¿Estás seguro de que quieres eliminar este ticket? Esta acción no se puede deshacer.')) {
-                e.preventDefault();
+    // Modal profesional para eliminación de tickets
+    function showDeleteModal(ticketId, onConfirm, onCancel) {
+        // Crear backdrop con blur avanzado
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full z-50 transition-all duration-300 opacity-0';
+        
+        // Crear modal con diseño de peligro
+        const modal = document.createElement('div');
+        modal.className = 'modal-enter modal-danger relative top-20 mx-auto p-0 border-0 w-96 shadow-2xl rounded-xl bg-white transform transition-all duration-400 scale-95';
+        
+        modal.innerHTML = `
+            <div class="text-center p-6">
+                <!-- Icono de peligro con animación -->
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full danger-icon-container mb-6 pulse-danger">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                </div>
+                
+                <!-- Título principal -->
+                <h3 class="text-xl leading-6 font-bold text-gray-900 mb-3">
+                    Eliminar Ticket #${ticketId}
+                </h3>
+                
+                <!-- Mensaje de advertencia -->
+                <div class="mt-3 px-4 py-2">
+                    <p class="text-base text-gray-700 mb-3 font-medium leading-relaxed">
+                        ¿Está completamente seguro de que desea eliminar este ticket?
+                    </p>
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                        <p class="text-sm text-red-700 leading-relaxed">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            <strong>Esta acción es irreversible.</strong> Toda la información del ticket se perderá permanentemente.
+                        </p>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed">
+                        Se eliminarán todos los datos asociados: descripción, fechas, asignaciones y historial completo.
+                    </p>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="flex justify-center space-x-4 mt-8">
+                    <button id="modal-cancel" type="button" 
+                            class="btn-cancel px-6 py-3 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-3 focus:ring-gray-300 transition-all duration-200">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                    <button id="modal-confirm" type="button" 
+                            class="btn-danger px-6 py-3 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 focus:outline-none focus:ring-3 focus:ring-red-300 transition-all duration-200">
+                        <i class="fas fa-trash mr-2"></i>Eliminar Definitivamente
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        backdrop.appendChild(modal);
+        document.body.appendChild(backdrop);
+        
+        // Animación de entrada suave
+        setTimeout(() => {
+            backdrop.classList.remove('opacity-0');
+            modal.classList.remove('scale-95');
+            modal.classList.add('scale-100');
+        }, 10);
+        
+        // Event listeners
+        const confirmBtn = modal.querySelector('#modal-confirm');
+        const cancelBtn = modal.querySelector('#modal-cancel');
+        
+        function closeModal() {
+            backdrop.classList.add('opacity-0');
+            modal.classList.remove('scale-100');
+            modal.classList.add('scale-95');
+            
+            setTimeout(() => {
+                if (document.body.contains(backdrop)) {
+                    document.body.removeChild(backdrop);
+                }
+            }, 300);
+        }
+        
+        confirmBtn.addEventListener('click', function() {
+            // Cambiar botón a estado de carga
+            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Eliminando...';
+            this.disabled = true;
+            
+            closeModal();
+            if (onConfirm) onConfirm();
+        });
+        
+        cancelBtn.addEventListener('click', function() {
+            closeModal();
+            if (onCancel) onCancel();
+        });
+        
+        // Cerrar con ESC
+        function handleEscape(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                if (onCancel) onCancel();
+                document.removeEventListener('keydown', handleEscape);
+            }
+        }
+        document.addEventListener('keydown', handleEscape);
+        
+        // Cerrar al hacer clic en el backdrop
+        backdrop.addEventListener('click', function(e) {
+            if (e.target === backdrop) {
+                closeModal();
+                if (onCancel) onCancel();
             }
         });
-    });
-
+        
+        // Focus en el botón cancelar por defecto (más seguro)
+        setTimeout(() => {
+            cancelBtn.focus();
+        }, 200);
+    }
+    
+    // Función para mostrar notificación de procesamiento
+    function showProcessingNotification() {
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-500';
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-spinner fa-spin mr-3 text-red-600"></i>
+                <div>
+                    <p class="font-semibold">Eliminando ticket...</p>
+                    <p class="text-sm">Procesando solicitud de eliminación</p>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Deslizar hacia dentro
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+        }, 100);
+        
+        return notification;
+    }
+    
+    // Configurar el botón de eliminar
+    const deleteButton = document.getElementById('delete-button');
+    const deleteForm = document.getElementById('delete-form');
+    
+    if (deleteButton && deleteForm) {
+        deleteButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Obtener el ID del ticket desde la URL del formulario
+            const formAction = deleteForm.action;
+            const ticketId = formAction.split('/').pop();
+            
+            showDeleteModal(
+                ticketId,
+                // Confirmar eliminación
+                function() {
+                    showProcessingNotification();
+                    
+                    // Enviar formulario después de un breve delay para mostrar la notificación
+                    setTimeout(() => {
+                        deleteForm.submit();
+                    }, 500);
+                },
+                // Cancelar eliminación
+                function() {
+                    console.log('Eliminación cancelada por el usuario');
+                }
+            );
+        });
+    }
+    
+    // Limpiar funcionalidad antigua de confirmaciones
     const resolveButtons = document.querySelectorAll('form[action*="markAsResolved"] button[type="submit"]');
     resolveButtons.forEach(button => {
         button.addEventListener('click', function(e) {

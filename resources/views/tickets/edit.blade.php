@@ -3,6 +3,77 @@
 @section('title', 'Editar Ticket #' . $ticket->id)
 
 @section('content')
+<!-- Estilos personalizados para mejorar la UX -->
+<style>
+    .modal-backdrop {
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+    
+    .unsaved-indicator {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .form-field-focus {
+        transform: scale(1.02);
+        transition: transform 0.2s ease;
+    }
+    
+    .save-button-loading {
+        background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+        background-size: 200% 200%;
+        animation: gradientShift 2s ease infinite;
+    }
+    
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    .modal-enter {
+        animation: modalSlideIn 0.3s ease-out;
+    }
+    
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95) translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+    
+    .notification-slide {
+        animation: slideInRight 0.5s ease-out;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    .field-error {
+        animation: shake 0.6s ease-in-out;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+</style>
+
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
     <!-- Header -->
     <div class="mb-8">
@@ -546,8 +617,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 firstError.focus();
             }
             
-            // Mostrar alerta
-            alert('Por favor complete todos los campos requeridos marcados con *');
+            // Mostrar modal personalizado en lugar de alert
+            showValidationModal();
         }
     });
     
@@ -594,13 +665,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Función para marcar como resuelto
 function markAsResolved() {
-    if (confirm('¿Está seguro de que desea marcar este ticket como resuelto? Esta acción actualizará el estado del ticket.')) {
-        document.getElementById('resolveForm').submit();
-    }
+    showCustomModal(
+        'Confirmar Resolución',
+        '¿Está seguro de que desea marcar este ticket como resuelto?',
+        'Esta acción actualizará el estado del ticket y se notificará al usuario solicitante.',
+        'Marcar como Resuelto',
+        'Cancelar',
+        function() {
+            document.getElementById('resolveForm').submit();
+        }
+    );
 }
 
-// Confirmar antes de salir si hay cambios sin guardar
+// Sistema de gestión de cambios más profesional
 let formChanged = false;
+let formSubmitting = false;
 const formInputs = document.querySelectorAll('input, select, textarea');
 const originalValues = {};
 
@@ -611,24 +690,379 @@ formInputs.forEach((input, index) => {
 
 // Detectar cambios
 formInputs.forEach((input, index) => {
+    input.addEventListener('input', function() {
+        if (this.value !== originalValues[index]) {
+            formChanged = true;
+            showUnsavedChangesIndicator();
+        } else {
+            checkAllValuesForChanges();
+        }
+    });
+    
     input.addEventListener('change', function() {
         if (this.value !== originalValues[index]) {
             formChanged = true;
+            showUnsavedChangesIndicator();
+        } else {
+            checkAllValuesForChanges();
         }
     });
 });
 
-// Advertir antes de salir
-window.addEventListener('beforeunload', function(e) {
-    if (formChanged) {
+// Verificar si realmente hay cambios
+function checkAllValuesForChanges() {
+    let hasChanges = false;
+    formInputs.forEach((input, index) => {
+        if (input.value !== originalValues[index]) {
+            hasChanges = true;
+        }
+    });
+    
+    if (!hasChanges) {
+        formChanged = false;
+        hideUnsavedChangesIndicator();
+    }
+}
+
+// Indicador visual de cambios no guardados mejorado
+function showUnsavedChangesIndicator() {
+    let indicator = document.getElementById('unsaved-changes-indicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'unsaved-changes-indicator';
+        indicator.className = 'unsaved-indicator fixed top-4 right-4 bg-gradient-to-r from-yellow-100 to-orange-100 border-l-4 border-yellow-500 text-yellow-800 px-6 py-4 rounded-lg shadow-xl z-50 transform transition-all duration-500 translate-x-full';
+        indicator.innerHTML = `
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 text-lg animate-pulse"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-semibold">Cambios sin guardar</p>
+                    <p class="text-xs mt-1 opacity-90">Los cambios se perderán si sale sin guardar</p>
+                </div>
+                <div class="ml-4">
+                </div>
+            </div>
+        `;
+        document.body.appendChild(indicator);
+        
+        // Animación de entrada mejorada
+        setTimeout(() => {
+            indicator.classList.add('notification-slide');
+            indicator.classList.remove('translate-x-full');
+        }, 100);
+    }
+}
+
+function hideUnsavedChangesIndicator() {
+    const indicator = document.getElementById('unsaved-changes-indicator');
+    if (indicator) {
+        indicator.classList.add('translate-x-full');
+        setTimeout(() => {
+            indicator.remove();
+        }, 300);
+    }
+}
+
+// Interceptar intentos de navegación
+function handleNavigation(e) {
+    if (formChanged && !formSubmitting) {
         e.preventDefault();
-        e.returnValue = '';
+        e.stopPropagation();
+        
+        const targetUrl = e.target.href || e.currentTarget.href;
+        
+        showCustomModal(
+            'Cambios sin Guardar',
+            '¿Desea salir sin guardar los cambios?',
+            'Los cambios realizados en el ticket se perderán si continúa sin guardar.',
+            'Salir sin Guardar',
+            'Continuar Editando',
+            function() {
+                formChanged = false;
+                window.location.href = targetUrl;
+            }
+        );
+        
+        return false;
+    }
+}
+
+// Aplicar interceptor a enlaces de navegación
+document.querySelectorAll('a[href]').forEach(link => {
+    // Solo interceptar enlaces que no sean para acciones del formulario
+    if (!link.href.includes('#') && !link.href.includes('javascript:')) {
+        link.addEventListener('click', handleNavigation);
     }
 });
 
-// No advertir si se envía el formulario
+// Marcar cuando el formulario se está enviando
 document.querySelector('form[action*="update"]').addEventListener('submit', function() {
+    formSubmitting = true;
     formChanged = false;
+    hideUnsavedChangesIndicator();
 });
+
+// Modal personalizado más profesional y elegante
+function showCustomModal(title, message, description, confirmText, cancelText, onConfirm, onCancel) {
+    // Crear backdrop con blur
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 transition-all duration-400 opacity-0';
+    
+    // Crear modal con animación mejorada
+    const modal = document.createElement('div');
+    modal.className = 'modal-enter relative top-20 mx-auto p-6 border-0 w-96 shadow-2xl rounded-xl bg-white transform transition-all duration-400 scale-95';
+    
+    modal.innerHTML = `
+        <div class="text-center">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 mb-6 shadow-inner">
+                <i class="fas fa-exclamation-triangle text-yellow-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl leading-6 font-bold text-gray-900 mb-3">${title}</h3>
+            <div class="mt-3 px-4 py-2">
+                <p class="text-base text-gray-700 mb-3 font-medium leading-relaxed">${message}</p>
+                <p class="text-sm text-gray-500 leading-relaxed">${description}</p>
+            </div>
+            <div class="flex justify-center space-x-4 mt-8">
+                <button id="modal-cancel" type="button" 
+                        class="px-6 py-3 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-3 focus:ring-gray-300 transition-all duration-200 transform hover:scale-105">
+                    <i class="fas fa-times mr-2"></i>${cancelText}
+                </button>
+                <button id="modal-confirm" type="button" 
+                        class="px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm font-semibold rounded-lg hover:from-yellow-600 hover:to-orange-600 focus:outline-none focus:ring-3 focus:ring-yellow-300 transition-all duration-200 transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>${confirmText}
+                </button>
+            </div>
+        </div>
+    `;
+    
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    
+    // Animación de entrada suave
+    setTimeout(() => {
+        backdrop.classList.remove('opacity-0');
+        modal.classList.remove('scale-95');
+        modal.classList.add('scale-100');
+    }, 10);
+    
+    // Event listeners
+    const confirmBtn = modal.querySelector('#modal-confirm');
+    const cancelBtn = modal.querySelector('#modal-cancel');
+    
+    function closeModal() {
+        backdrop.classList.add('opacity-0');
+        modal.classList.remove('scale-100');
+        modal.classList.add('scale-95');
+        
+        setTimeout(() => {
+            if (document.body.contains(backdrop)) {
+                document.body.removeChild(backdrop);
+            }
+        }, 400);
+    }
+    
+    confirmBtn.addEventListener('click', function() {
+        closeModal();
+        if (onConfirm) onConfirm();
+    });
+    
+    cancelBtn.addEventListener('click', function() {
+        closeModal();
+        if (onCancel) onCancel();
+    });
+    
+    // Cerrar con ESC
+    function handleEscape(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            if (onCancel) onCancel();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    }
+    document.addEventListener('keydown', handleEscape);
+    
+    // Cerrar al hacer clic en el backdrop
+    backdrop.addEventListener('click', function(e) {
+        if (e.target === backdrop) {
+            closeModal();
+            if (onCancel) onCancel();
+        }
+    });
+    
+    // Focus en el botón cancelar por defecto con delay
+    setTimeout(() => {
+        cancelBtn.focus();
+    }, 200);
+}
+
+// Función de guardado rápido
+function quickSave() {
+    const form = document.querySelector('form[action*="update"]');
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    // Verificar campos requeridos
+    let isValid = true;
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            isValid = false;
+        }
+    });
+    
+    if (isValid) {
+        // Mostrar indicador de guardado
+        showSavingIndicator();
+        form.submit();
+    } else {
+        showValidationModal();
+    }
+}
+
+// Indicador de guardado en proceso
+function showSavingIndicator() {
+    const indicator = document.createElement('div');
+    indicator.className = 'fixed top-4 right-4 bg-blue-100 border border-blue-400 text-blue-700 px-6 py-4 rounded-lg shadow-lg z-50 notification-slide';
+    indicator.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-spinner fa-spin mr-3 text-blue-600"></i>
+            <div>
+                <p class="font-semibold">Guardando cambios...</p>
+                <p class="text-sm">Por favor espere un momento</p>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(indicator);
+    
+    // Ocultar el indicador de cambios sin guardar
+    hideUnsavedChangesIndicator();
+}
+
+// Modal para errores de validación
+function showValidationModal() {
+    showCustomModal(
+        'Campos Requeridos',
+        'Por favor complete todos los campos obligatorios',
+        'Los campos marcados con asterisco (*) son requeridos para poder guardar el ticket.',
+        'Entendido',
+        '',
+        function() {
+            // Focus en el primer campo con error
+            const firstError = document.querySelector('.border-red-500');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+        }
+    );
+}
+
+// Función para mostrar confirmación de guardado exitoso
+function showSuccessMessage() {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg shadow-lg z-50 transform transition-all duration-500 translate-x-full';
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-3 text-green-500"></i>
+            <div>
+                <p class="font-medium">¡Cambios guardados exitosamente!</p>
+                <p class="text-sm">El ticket ha sido actualizado correctamente.</p>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animación de entrada
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Auto-ocultar después de 4 segundos
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 500);
+    }, 4000);
+}
+
+// Mejorar la experiencia del botón de guardar
+const saveButton = document.querySelector('button[type="submit"]');
+if (saveButton) {
+    const originalText = saveButton.innerHTML;
+    
+    saveButton.addEventListener('click', function() {
+        // Cambiar texto del botón mientras se procesa
+        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
+        this.disabled = true;
+        
+        // Restaurar el botón si hay errores de validación
+        setTimeout(() => {
+            if (document.querySelector('.border-red-500')) {
+                this.innerHTML = originalText;
+                this.disabled = false;
+            }
+        }, 100);
+    });
+}
+
+// Interceptar navegación con modal personalizado
+function interceptNavigation() {
+    // Interceptar todos los enlaces
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a');
+        if (link && formChanged && !formSubmitting) {
+            e.preventDefault();
+            
+            showCustomModal(
+                'Cambios Sin Guardar',
+                '¿Desea guardar los cambios antes de continuar?',
+                'Los cambios realizados en este ticket se perderán si no los guarda.',
+                'Guardar y Continuar',
+                'Descartar Cambios',
+                function() {
+                    // Guardar primero, luego navegar
+                    quickSave();
+                    setTimeout(() => {
+                        window.location.href = link.href;
+                    }, 1000);
+                },
+                function() {
+                    // Navegar sin guardar
+                    formChanged = false;
+                    window.location.href = link.href;
+                }
+            );
+        }
+    });
+    
+    // Interceptar el botón atrás del navegador
+    window.addEventListener('popstate', function(e) {
+        if (formChanged && !formSubmitting) {
+            history.pushState(null, '', window.location.href);
+            
+            showCustomModal(
+                'Cambios Sin Guardar',
+                '¿Desea guardar los cambios antes de salir?',
+                'Los cambios realizados en este ticket se perderán si no los guarda.',
+                'Guardar Cambios',
+                'Salir Sin Guardar',
+                function() {
+                    quickSave();
+                },
+                function() {
+                    formChanged = false;
+                    history.back();
+                }
+            );
+        }
+    });
+}
+
+// Inicializar interceptor de navegación
+interceptNavigation();
 </script>
 @endsection
