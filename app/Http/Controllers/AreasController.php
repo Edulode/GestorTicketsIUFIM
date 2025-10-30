@@ -13,7 +13,7 @@ class AreasController extends Controller
      */
     public function index()
     {
-        $areas = Area::withCount(['usuarios', 'subareas'])
+        $areas = Area::withCount(['usuarios'])
                     ->orderBy('area')
                     ->paginate(10);
 
@@ -57,7 +57,7 @@ class AreasController extends Controller
      */
     public function show(Area $area)
     {
-        $area->load(['usuarios', 'subareas']);
+        $area->load(['usuarios']);
         
         // Obtener usuarios recientes del área
         $usuariosRecientes = $area->usuarios()
@@ -115,15 +115,10 @@ class AreasController extends Controller
      */
     public function destroy(Area $area)
     {
-        // Verificar si tiene usuarios o subareas asociadas
+        // Verificar si tiene usuarios asociados
         if ($area->usuarios()->count() > 0) {
             return redirect()->route('areas.index')
                            ->with('error', 'No se puede eliminar el área porque tiene usuarios asignados.');
-        }
-
-        if ($area->subareas()->count() > 0) {
-            return redirect()->route('areas.index')
-                           ->with('error', 'No se puede eliminar el área porque tiene subáreas asociadas.');
         }
 
         $area->delete();

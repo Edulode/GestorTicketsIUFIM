@@ -69,24 +69,6 @@
                         @enderror
                         <p class="mt-1 text-sm text-gray-500">Nombre específico de la subárea o lugar.</p>
                     </div>
-
-                    <div>
-                        <label for="area_id" class="block text-sm font-medium text-gray-700">Área Padre *</label>
-                        <select id="area_id" name="area_id" required
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                            <option value="">Seleccione un área</option>
-                            @foreach($areas as $area)
-                                <option value="{{ $area->id }}" 
-                                        {{ (old('area_id', $subarea->area_id) == $area->id) ? 'selected' : '' }}>
-                                    {{ $area->area }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('area_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                        <p class="mt-1 text-sm text-gray-500">Área a la que pertenece esta subárea.</p>
-                    </div>
                 </div>
             </div>
         </div>
@@ -104,10 +86,6 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">ID de la Subárea</label>
                         <p class="mt-1 text-sm text-gray-900">#{{ $subarea->id }}</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Área Actual</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ $subarea->area->area }}</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Fecha de Creación</label>
@@ -209,8 +187,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const subareaInput = document.getElementById('subarea');
-    const areaSelect = document.getElementById('area_id');
-    const originalAreaId = {{ $subarea->area_id }};
     
     // Validación para el campo subárea
     subareaInput.addEventListener('blur', function() {
@@ -231,60 +207,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Validación para el select de área
-    areaSelect.addEventListener('change', function() {
-        if (!this.value) {
-            this.classList.add('border-red-500');
-        } else {
-            this.classList.remove('border-red-500');
-            this.classList.add('border-green-500');
-        }
-        
-        // Mostrar advertencia si cambia de área y hay tickets asociados
-        if (this.value != originalAreaId && {{ $subarea->tickets->count() }} > 0) {
-            if (!document.getElementById('area-change-warning')) {
-                const warning = document.createElement('div');
-                warning.id = 'area-change-warning';
-                warning.className = 'mt-2 bg-red-50 border border-red-200 rounded-md p-3';
-                warning.innerHTML = `
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-triangle text-red-400"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-red-700">
-                                <strong>¡Atención!</strong> Está cambiando el área padre de una subárea que tiene tickets asociados.
-                            </p>
-                        </div>
-                    </div>
-                `;
-                this.parentNode.appendChild(warning);
-            }
-        } else {
-            const warning = document.getElementById('area-change-warning');
-            if (warning) {
-                warning.remove();
-            }
-        }
-    });
-
     // Validar formulario antes de enviar
     document.querySelector('form').addEventListener('submit', function(e) {
-        let valid = true;
-        
         if (!subareaInput.value.trim()) {
             subareaInput.classList.add('border-red-500');
-            valid = false;
-        }
-        
-        if (!areaSelect.value) {
-            areaSelect.classList.add('border-red-500');
-            valid = false;
-        }
-        
-        if (!valid) {
             e.preventDefault();
-            alert('Por favor, complete todos los campos requeridos.');
+            alert('Por favor, complete el nombre de la subárea.');
         }
     });
 });

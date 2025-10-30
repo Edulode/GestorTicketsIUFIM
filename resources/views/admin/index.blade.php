@@ -114,7 +114,7 @@
                 Configuración del Sistema
             </h3>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
                 <a href="{{ route('areas.index') }}" 
                    class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                     <div class="flex items-center">
@@ -148,17 +148,6 @@
                     </div>
                 </a>
 
-                <a href="{{ route('ciclos.index') }}" 
-                   class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div class="flex items-center">
-                        <i class="fas fa-calendar text-orange-500 text-xl mr-3"></i>
-                        <div>
-                            <h4 class="font-medium text-gray-900">Ciclos</h4>
-                            <p class="text-sm text-gray-500">Períodos académicos</p>
-                        </div>
-                    </div>
-                </a>
-
                 <a href="{{ route('categorias-servicio.index') }}" 
                    class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                     <div class="flex items-center">
@@ -180,6 +169,7 @@
                         </div>
                     </div>
                 </a>
+                
                 <a href="{{ route('usuarios.index') }}" 
                    class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                     <div class="flex items-center">

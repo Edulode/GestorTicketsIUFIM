@@ -101,16 +101,12 @@
                         <label class="block text-sm font-medium text-gray-700">Usuarios Asignados</label>
                         <p class="mt-1 text-sm text-gray-900">{{ $area->usuarios->count() }} usuario(s)</p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Subáreas</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ $area->subareas->count() }} subárea(s)</p>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Usuarios y Subáreas Actuales -->
-        @if($area->usuarios->count() > 0 || $area->subareas->count() > 0)
+        <!-- Usuarios Actuales -->
+        @if($area->usuarios->count() > 0)
         <div class="bg-white shadow rounded-lg">
             <div class="px-6 py-4 border-b border-gray-200">
                 <h3 class="text-lg font-medium text-gray-900">
@@ -135,20 +131,6 @@
                             @if($area->usuarios->count() > 5)
                                 <p class="text-sm text-gray-500">Y {{ $area->usuarios->count() - 5 }} usuario(s) más...</p>
                             @endif
-                        </div>
-                    </div>
-                @endif
-
-                @if($area->subareas->count() > 0)
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-700 mb-3">Subáreas ({{ $area->subareas->count() }})</h4>
-                        <div class="space-y-2">
-                            @foreach($area->subareas as $subarea)
-                                <div class="flex items-center text-sm text-gray-600">
-                                    <i class="fas fa-layer-group mr-2"></i>
-                                    {{ $subarea->subarea }}
-                                </div>
-                            @endforeach
                         </div>
                     </div>
                 @endif

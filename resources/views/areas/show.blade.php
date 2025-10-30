@@ -149,57 +149,6 @@
                 </div>
             </div>
 
-            <!-- Subáreas -->
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-medium text-gray-900">
-                            <i class="fas fa-layer-group mr-2"></i>
-                            Subáreas ({{ $area->subareas->count() }})
-                        </h3>
-                        <a href="{{ route('subareas.create') }}?area={{ $area->id }}" 
-                           class="text-sm text-blue-600 hover:text-blue-500 font-medium">
-                            Crear Subárea
-                        </a>
-                    </div>
-                </div>
-                <div class="p-6">
-                    @if($area->subareas->count() > 0)
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            @foreach($area->subareas as $subarea)
-                                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <h4 class="text-sm font-medium text-gray-900">{{ $subarea->subarea }}</h4>
-                                            <p class="text-xs text-gray-500 mt-1">
-                                                <i class="fas fa-calendar mr-1"></i>
-                                                {{ $subarea->created_at ? $subarea->created_at->format('d/m/Y') : 'No disponible' }}
-                                            </p>
-                                        </div>
-                                        <a href="{{ route('subareas.show', $subarea->id) }}" 
-                                           class="text-blue-600 hover:text-blue-500">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-center py-6">
-                            <i class="fas fa-layer-group text-gray-400 text-3xl mb-3"></i>
-                            <p class="text-gray-500">No hay subáreas creadas para esta área.</p>
-                            <div class="mt-4">
-                                <a href="{{ route('subareas.create') }}?area={{ $area->id }}" 
-                                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                                    <i class="fas fa-plus mr-2"></i>
-                                    Crear Primera Subárea
-                                </a>
-                            </div>
-                        </div>
-                    @endif
-                </div>
-            </div>
-
             <!-- Tickets Recientes del Área -->
             <div class="bg-white shadow rounded-lg">
                 <div class="px-6 py-4 border-b border-gray-200">
@@ -288,10 +237,6 @@
                             <span class="text-2xl font-bold text-blue-600">{{ $area->usuarios->count() }}</span>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="text-sm font-medium text-gray-600">Subáreas</span>
-                            <span class="text-lg font-semibold text-green-600">{{ $area->subareas->count() }}</span>
-                        </div>
-                        <div class="flex items-center justify-between">
                             <span class="text-sm font-medium text-gray-600">Total de Tickets</span>
                             <span class="text-lg font-semibold text-purple-600">{{ $ticketsRecientes->count() }}</span>
                         </div>
@@ -322,10 +267,10 @@
                             <i class="fas fa-user-plus mr-2"></i>
                             Agregar Usuario
                         </a>
-                        <a href="{{ route('subareas.create') }}?area={{ $area->id }}" 
+                        <a href="{{ route('subareas.index') }}" 
                            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             <i class="fas fa-layer-group mr-2"></i>
-                            Crear Subárea
+                            Ver Subáreas
                         </a>
                         <a href="{{ route('areas.edit', $area->id) }}" 
                            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -357,9 +302,9 @@
                     Esta acción no se puede deshacer. Se eliminará permanentemente el área 
                     <strong>{{ $area->area }}</strong> y todos sus datos asociados.
                 </p>
-                @if($area->usuarios->count() > 0 || $area->subareas->count() > 0)
+                @if($area->usuarios->count() > 0)
                     <p class="mt-2 text-sm text-red-600 font-medium">
-                        ⚠️ Esta área tiene {{ $area->usuarios->count() }} usuario(s) y {{ $area->subareas->count() }} subárea(s) asignadas.
+                        ⚠️ Esta área tiene {{ $area->usuarios->count() }} usuario(s) asignados.
                     </p>
                 @endif
             </div>

@@ -64,40 +64,6 @@
                         @enderror
                         <p class="mt-1 text-sm text-gray-500">Ingrese el nombre específico de la subárea o lugar.</p>
                     </div>
-
-                    <div>
-                        <label for="area_id" class="block text-sm font-medium text-gray-700">Área Padre *</label>
-                        <select id="area_id" name="area_id" required
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                            <option value="">Seleccione un área</option>
-                            @foreach($areas as $area)
-                                <option value="{{ $area->id }}" 
-                                        {{ (old('area_id', $selectedArea) == $area->id) ? 'selected' : '' }}>
-                                    {{ $area->area }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('area_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                        <p class="mt-1 text-sm text-gray-500">Seleccione el área a la que pertenece esta subárea.</p>
-                    </div>
-
-                    @if(isset($selectedArea) && $selectedArea)
-                        <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <i class="fas fa-info-circle text-blue-400"></i>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm text-blue-700">
-                                        <strong>Área preseleccionada:</strong> 
-                                        {{ $areas->find($selectedArea)->area ?? 'Área no encontrada' }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>

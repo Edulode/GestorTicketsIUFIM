@@ -54,7 +54,7 @@
     @endif
 
     <!-- Estadísticas -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-4xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-3xl mx-auto">
         <div class="bg-white overflow-hidden shadow rounded-lg">
             <div class="p-5">
                 <div class="flex items-center">
@@ -66,27 +66,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate">Total de Subáreas</dt>
-                            <dd class="text-lg font-medium text-gray-900">{{ $subareas->total() }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-5">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-green-500 rounded-md flex items-center justify-center">
-                            <i class="fas fa-building text-white text-sm"></i>
-                        </div>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Áreas con Subáreas</dt>
-                            <dd class="text-lg font-medium text-gray-900">
-                                {{ $subareas->pluck('area_id')->unique()->count() }}
-                            </dd>
+                            <dd class="text-lg font-medium text-gray-900">{{ $subareas->count() }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -98,16 +78,13 @@
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <div class="w-8 h-8 bg-yellow-500 rounded-md flex items-center justify-center">
-                            <i class="fas fa-chart-line text-white text-sm"></i>
+                            <i class="fas fa-ticket-alt text-white text-sm"></i>
                         </div>
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Promedio por Área</dt>
-                            <dd class="text-lg font-medium text-gray-900">
-                                {{ $subareas->pluck('area_id')->unique()->count() > 0 ? 
-                                   round($subareas->total() / $subareas->pluck('area_id')->unique()->count(), 1) : 0 }}
-                            </dd>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Tickets en Subáreas</dt>
+                            <dd class="text-lg font-medium text-gray-900">{{ $subareas->sum(function($subarea) { return $subarea->tickets->count(); }) }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -119,7 +96,7 @@
     <div class="bg-white shadow overflow-hidden sm:rounded-md">
         <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
             <h3 class="text-lg leading-6 font-medium text-gray-900">Lista de Subáreas</h3>
-            <p class="mt-1 max-w-2xl text-sm text-gray-500">{{ $subareas->total() }} subárea(s) registrada(s)</p>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">{{ $subareas->count() }} subárea(s) registrada(s)</p>
         </div>
 
         @if($subareas->count() > 0)
@@ -131,7 +108,7 @@
                                 Subárea
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Área Padre
+                                Tickets Asociados
                             </th>
                             <th scope="col" class="relative px-6 py-3">
                                 <span class="sr-only">Acciones</span>
@@ -156,9 +133,9 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            <i class="fas fa-building mr-1"></i>
-                                            {{ $subarea->area->area }}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-ticket-alt mr-1"></i>
+                                            {{ $subarea->tickets->count() }} tickets
                                         </span>
                                     </div>
                                 </td>

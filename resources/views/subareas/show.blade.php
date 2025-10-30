@@ -48,16 +48,6 @@
                             <dd class="mt-1 text-sm text-gray-900">#{{ $subarea->id }}</dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Área Padre</dt>
-                            <dd class="mt-1">
-                                <a href="{{ route('areas.show', $subarea->area->id) }}" 
-                                   class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors">
-                                    <i class="fas fa-building mr-2"></i>
-                                    {{ $subarea->area->area }}
-                                </a>
-                            </dd>
-                        </div>
-                        <div>
                             <dt class="text-sm font-medium text-gray-500">Tickets Asociados</dt>
                             <dd class="mt-1 text-sm text-gray-900">{{ $subarea->tickets->count() }} ticket(s)</dd>
                         </div>
@@ -160,40 +150,6 @@
                 </div>
             </div>
 
-            <!-- Información del Área Padre -->
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">
-                        <i class="fas fa-building mr-2"></i>
-                        Información del Área Padre
-                    </h3>
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 h-12 w-12">
-                                <div class="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                    <i class="fas fa-building text-blue-600"></i>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <h4 class="text-lg font-medium text-gray-900">{{ $subarea->area->area }}</h4>
-                                <p class="text-sm text-gray-600">
-                                    {{ $subarea->area->usuarios->count() }} usuario(s) • 
-                                    {{ $subarea->area->subareas->count() }} subárea(s)
-                                </p>
-                            </div>
-                        </div>
-                        <div>
-                            <a href="{{ route('areas.show', $subarea->area->id) }}" 
-                               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                                <i class="fas fa-external-link-alt mr-2"></i>
-                                Ver Área Completa
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Panel Lateral de Estadísticas -->
@@ -256,11 +212,6 @@
                             <i class="fas fa-edit mr-2"></i>
                             Editar Información
                         </a>
-                        <a href="{{ route('areas.show', $subarea->area->id) }}" 
-                           class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <i class="fas fa-building mr-2"></i>
-                            Ver Área Padre
-                        </a>
                         <a href="{{ route('tickets.index') }}?subarea={{ $subarea->id }}" 
                            class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             <i class="fas fa-list mr-2"></i>
@@ -280,11 +231,6 @@
                 </div>
                 <div class="p-6">
                     <div class="space-y-3">
-                        <div class="flex items-center text-sm">
-                            <i class="fas fa-building text-blue-500 mr-3"></i>
-                            <span class="font-medium text-gray-700">Área:</span>
-                            <span class="ml-2 text-gray-900">{{ $subarea->area->area }}</span>
-                        </div>
                         <div class="flex items-center text-sm">
                             <i class="fas fa-layer-group text-purple-500 mr-3"></i>
                             <span class="font-medium text-gray-700">Subárea:</span>

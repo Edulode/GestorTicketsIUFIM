@@ -37,7 +37,7 @@ class CategoriaServicioController extends Controller
                 break;
         }
         
-        $categorias = $query->get();
+        $categorias = $query->paginate(15);
         
         return view('categoria_servicio.index', compact('categorias'));
     }
