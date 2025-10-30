@@ -108,51 +108,7 @@
         </div>
     </div>
 
-    <!-- Filtros y Búsqueda -->
-    <div class="bg-white shadow rounded-lg mb-6">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">
-                <i class="fas fa-search mr-2"></i>
-                Filtros y Búsqueda
-            </h3>
-        </div>
-        <div class="p-6">
-            <form method="GET" action="{{ route('categorias-servicio.index') }}" id="filter-form" class="space-y-4">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div>
-                        <label for="search" class="block text-sm font-medium text-gray-700">Buscar</label>
-                        <div class="mt-1 relative rounded-md shadow-sm">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-gray-400"></i>
-                            </div>
-                            <input type="text" id="search" name="search" value="{{ request('search') }}" 
-                                   placeholder="Buscar por nombre..." 
-                                   class="block w-full pl-10 pr-3 py-2 border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        </div>
-                    </div>
-                    <div>
-                        <label for="sort" class="block text-sm font-medium text-gray-700">Ordenar por</label>
-                        <select id="sort" name="sort" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                            <option value="categoria_servicio" {{ request('sort') == 'categoria_servicio' ? 'selected' : '' }}>Nombre A-Z</option>
-                            <option value="categoria_servicio_desc" {{ request('sort') == 'categoria_servicio_desc' ? 'selected' : '' }}>Nombre Z-A</option>
-                            <option value="tipos_count" {{ request('sort') == 'tipos_count' ? 'selected' : '' }}>Más tipos asociados</option>
-                            <option value="tickets_count" {{ request('sort') == 'tickets_count' ? 'selected' : '' }}>Más tickets</option>
-                        </select>
-                    </div>
-                    <div class="flex items-end">
-                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <i class="fas fa-filter mr-2"></i>
-                            Filtrar
-                        </button>
-                        <a href="{{ route('categorias-servicio.index') }}" class="ml-2 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <i class="fas fa-times mr-2"></i>
-                            Limpiar
-                        </a>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+    
 
     <!-- Tabla de Categorías -->
     <div class="bg-white shadow rounded-lg overflow-hidden">
@@ -194,9 +150,7 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Tickets Asociados
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Fecha Creación
-                            </th>
+                            
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Acciones
                             </th>
@@ -252,14 +206,6 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    @if($categoria->created_at)
-                                        <div>{{ $categoria->created_at->format('d/m/Y') }}</div>
-                                        <div class="text-xs text-gray-400">{{ $categoria->created_at->format('H:i') }}</div>
-                                    @else
-                                        <span class="text-gray-400">No disponible</span>
-                                    @endif
-                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         <!-- Ver -->
@@ -280,13 +226,13 @@
                                         @if($categoria->tickets->count() == 0 && $categoria->tiposSolicitud->count() == 0)
                                             <form action="{{ route('categorias-servicio.destroy', $categoria->id) }}" 
                                                   method="POST" 
-                                                  class="inline"
-                                                  onsubmit="return confirm('¿Está seguro de que desea eliminar esta categoría? Esta acción no se puede deshacer.')">
+                                                  class="inline delete-form">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" 
-                                                        class="text-red-600 hover:text-red-900 transition-colors duration-200" 
-                                                        title="Eliminar">
+                                                <button type="button" 
+                                                        class="text-red-600 hover:text-red-900 transition-colors duration-200 delete-button" 
+                                                        title="Eliminar"
+                                                        data-categoria="{{ $categoria->categoria_servicio }}">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
@@ -343,9 +289,118 @@
     </div>
 </div>
 
+<!-- Modal de Confirmación de Eliminación -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <!-- Icono de advertencia -->
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            
+            <!-- Título -->
+            <h3 class="text-lg font-medium text-gray-900 text-center mb-2">
+                Confirmar Eliminación
+            </h3>
+            
+            <!-- Mensaje -->
+            <div class="text-sm text-gray-500 text-center mb-6">
+                <p class="mb-2">Está a punto de eliminar la categoría:</p>
+                <p class="font-semibold text-gray-900" id="categoryToDelete"></p>
+                <p class="mt-2 text-red-600">⚠️ Esta acción es permanente e irreversible</p>
+            </div>
+            
+            <!-- Botones -->
+            <div class="flex justify-center space-x-3">
+                <button type="button" 
+                        id="cancelDelete"
+                        class="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors">
+                    <i class="fas fa-times mr-2"></i>
+                    Cancelar
+                </button>
+                <button type="button" 
+                        id="confirmDelete"
+                        class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors">
+                    <i class="fas fa-trash mr-2"></i>
+                    Eliminar Definitivamente
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Script para funcionalidades adicionales -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Variables del modal
+    const deleteModal = document.getElementById('deleteModal');
+    const categoryToDelete = document.getElementById('categoryToDelete');
+    const confirmDeleteBtn = document.getElementById('confirmDelete');
+    const cancelDeleteBtn = document.getElementById('cancelDelete');
+    let currentForm = null;
+    
+    // Abrir modal de confirmación
+    document.querySelectorAll('.delete-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const categoria = this.getAttribute('data-categoria');
+            currentForm = this.closest('.delete-form');
+            
+            categoryToDelete.textContent = categoria;
+            deleteModal.classList.remove('hidden');
+            
+            // Animación de entrada
+            setTimeout(() => {
+                deleteModal.querySelector('.relative').style.transform = 'scale(1)';
+                deleteModal.querySelector('.relative').style.opacity = '1';
+            }, 10);
+        });
+    });
+    
+    // Confirmar eliminación
+    confirmDeleteBtn.addEventListener('click', function() {
+        if (currentForm) {
+            // Cambiar a estado de carga
+            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Eliminando...';
+            this.disabled = true;
+            
+            // Enviar formulario
+            currentForm.submit();
+        }
+    });
+    
+    // Cancelar eliminación
+    function closeModal() {
+        deleteModal.querySelector('.relative').style.transform = 'scale(0.9)';
+        deleteModal.querySelector('.relative').style.opacity = '0';
+        setTimeout(() => {
+            deleteModal.classList.add('hidden');
+            currentForm = null;
+            confirmDeleteBtn.innerHTML = '<i class="fas fa-trash mr-2"></i>Eliminar Definitivamente';
+            confirmDeleteBtn.disabled = false;
+        }, 200);
+    }
+    
+    cancelDeleteBtn.addEventListener('click', closeModal);
+    
+    // Cerrar modal al hacer clic fuera
+    deleteModal.addEventListener('click', function(e) {
+        if (e.target === deleteModal) {
+            closeModal();
+        }
+    });
+    
+    // Cerrar modal con tecla Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !deleteModal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+    
+    // Estilo inicial del modal
+    deleteModal.querySelector('.relative').style.transform = 'scale(0.9)';
+    deleteModal.querySelector('.relative').style.opacity = '0';
+    deleteModal.querySelector('.relative').style.transition = 'all 0.2s ease-out';
+    
     // Auto-submit del formulario de filtros cuando cambie el select de ordenamiento
     const sortSelect = document.getElementById('sort');
     if (sortSelect) {
@@ -367,17 +422,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         });
     }
-    
-    // Confirmación para eliminación
-    const deleteButtons = document.querySelectorAll('form[onsubmit*="confirm"] button[type="submit"]');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            const categoria = this.closest('tr').querySelector('.text-sm.font-medium.text-gray-900').textContent.trim();
-            if (!confirm(`¿Está seguro de que desea eliminar la categoría "${categoria}"? Esta acción no se puede deshacer.`)) {
-                e.preventDefault();
-            }
-        });
-    });
     
     // Auto-ocultar alertas después de 5 segundos
     const alerts = document.querySelectorAll('.bg-green-50, .bg-red-50');

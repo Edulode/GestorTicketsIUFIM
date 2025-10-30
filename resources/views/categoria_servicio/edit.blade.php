@@ -250,23 +250,10 @@ document.addEventListener('DOMContentLoaded', function() {
         hasChanges = this.value !== originalValue;
     });
     
-    // Advertir si intenta salir sin guardar
-    window.addEventListener('beforeunload', function(e) {
-        if (hasChanges) {
-            e.preventDefault();
-            e.returnValue = '¿Está seguro de que desea salir? Los cambios no guardados se perderán.';
-        }
-    });
-    
-    // No mostrar advertencia al enviar el formulario
-    document.querySelector('form').addEventListener('submit', function() {
-        hasChanges = false;
-    });
-    
     // No mostrar advertencia al hacer clic en cancelar
     document.querySelector('a[href*="categorias-servicio.index"]').addEventListener('click', function(e) {
         if (hasChanges) {
-            if (!confirm('¿Está seguro de que desea cancelar? Los cambios no guardados se perderán.')) {
+            if (!confirm('Los cambios realizados no se han guardado. ¿Está seguro de que desea cancelar la edición?')) {
                 e.preventDefault();
             }
         }

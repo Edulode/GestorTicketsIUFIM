@@ -140,7 +140,7 @@
                 <a href="{{ route('tecnicos.index') }}" 
                    class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                     <div class="flex items-center">
-                        <i class="fas fa-user-wrench text-purple-500 text-xl mr-3"></i>
+                        <i class="fas fa-tools text-purple-500 text-xl mr-3"></i>
                         <div>
                             <h4 class="font-medium text-gray-900">Técnicos</h4>
                             <p class="text-sm text-gray-500">Personal técnico</p>
