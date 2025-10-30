@@ -16,10 +16,25 @@ class CategoriaServicioSeeder extends Seeder
     public function run(): void
     {
         DB::table('categoria_servicios')->insert([
-            ['categoria_servicio' => 'Soporte Técnico'],
-            ['categoria_servicio' => 'Mantenimiento'],
-            ['categoria_servicio' => 'Consultoría'],
-            ['categoria_servicio' => 'Desarrollo de Software'],
+            ['categoria_servicio' => 'Acceso a sistemas'],
+            ['categoria_servicio' => 'Apoyo en eventos de otras áreas'],
+            ['categoria_servicio' => 'Asesorías'],
+            ['categoria_servicio' => 'Aulas'],
+            ['categoria_servicio' => 'Cableado de red'],
+            ['categoria_servicio' => 'Certificaciones'],
+            ['categoria_servicio' => 'Consumibles-tintas'],
+            ['categoria_servicio' => 'Correo institucional'],
+            ['categoria_servicio' => 'Eléctrico'],
+            ['categoria_servicio' => 'Hardware'],
+            ['categoria_servicio' => 'Información para otras areas'],
+            ['categoria_servicio' => 'Internet'],
+            ['categoria_servicio' => 'Proveedor'],
+            ['categoria_servicio' => 'Red'],
+            ['categoria_servicio' => 'Salas de cómputo'],
+            ['categoria_servicio' => 'Servicios genéricos'],
+            ['categoria_servicio' => 'Sistemas-funcionamiento'],
+            ['categoria_servicio' => 'Software'],
+            ['categoria_servicio' => 'Telefonía'],
         ]);
     }
 }

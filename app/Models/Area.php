@@ -10,13 +10,6 @@ use App\Models\Usuario;
 class Area extends Model
 {
     protected $fillable = ['area'];
-    
-    // Accessor para que funcione tanto con 'area' como con 'nombre'
-    public function getNombreAttribute()
-    {
-        return $this->area;
-    }
-    
     public function subareas()
     {
         return $this->hasMany(Subarea::class);

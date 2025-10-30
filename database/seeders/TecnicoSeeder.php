@@ -15,10 +15,15 @@ class TecnicoSeeder extends Seeder
     public function run(): void
     {
         DB::table('tecnicos')->insert([
-            ['nombre' => 'Eduardo', 'apellidoP' => 'Lopez', 'apellidoM' => 'Delgado'],
-            ['nombre' => 'Maria', 'apellidoP' => 'Gomez', 'apellidoM' => 'Perez'],
-            ['nombre' => 'Juan', 'apellidoP' => 'Martinez', 'apellidoM' => 'Sanchez'],
-            ['nombre' => 'Ana', 'apellidoP' => 'Torres', 'apellidoM' => 'Ramirez'],
+            ['nombre' => 'Jennifer', 'apellidoP' => ' ', 'apellidoM' => ' '],
+            ['nombre' => 'Nora', 'apellidoP' => ' ', 'apellidoM' => ' '],
+            ['nombre' => 'Tomás', 'apellidoP' => ' ', 'apellidoM' => ' '],
+            ['nombre' => 'Juan', 'apellidoP' => ' ', 'apellidoM' => ' '],
+            ['nombre' => 'Tomás', 'apellidoP' => 'y', 'apellidoM' => 'Juan'],
+            ['nombre' => 'Jennifer', 'apellidoP' => 'y', 'apellidoM' => 'Tomás'],
+            ['nombre' => 'Jennifer', 'apellidoP' => 'y', 'apellidoM' => 'Juan'],
+            ['nombre' => 'Rafael', 'apellidoP' => ' ', 'apellidoM' => ' '],
+            ['nombre' => 'Adrián', 'apellidoP' => 'Salvador ', 'apellidoM' => ' '],
         ]);
     }
 }

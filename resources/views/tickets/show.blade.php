@@ -28,16 +28,11 @@
             <div class="flex items-center space-x-3">
                 <!-- Botón Marcar como Resuelto -->
                 @if($ticket->status && $ticket->status->status !== 'Resuelto')
-                    <form action="{{ route('tickets.markAsResolved', $ticket->id) }}" method="POST" class="inline">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit" 
-                                onclick="return confirm('¿Estás seguro de que quieres marcar este ticket como resuelto?')"
-                                class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500 focus:outline-none focus:border-green-700 focus:ring focus:ring-green-200 active:bg-green-600 disabled:opacity-25 transition">
-                            <i class="fas fa-check mr-2"></i>
-                            Marcar como Resuelto
-                        </button>
-                    </form>
+                    <a href="{{ route('tickets.completado', $ticket->id) }}" 
+                       class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-500 focus:outline-none focus:border-green-700 focus:ring focus:ring-green-200 active:bg-green-600 disabled:opacity-25 transition">
+                        <i class="fas fa-check mr-2"></i>
+                        Marcar como Resuelto
+                    </a>
                 @endif
                 
                 <!-- Botón Editar -->
@@ -208,17 +203,23 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
-                            <p class="text-sm text-gray-900">{{ $ticket->usuario->nombre . " " . $ticket->usuario->apellido_paterno . " " . $ticket->usuario->apellido_materno ?? 'No especificado' }}</p>
+                            <p class="text-sm text-gray-900">
+                                @if($ticket->usuario)
+                                    {{ $ticket->usuario->nombre . " " . $ticket->usuario->apellido_paterno . " " . $ticket->usuario->apellido_materno }}
+                                @else
+                                    <span class="text-red-500">No hay usuario asociado (usuario_id: {{ $ticket->usuario_id ?? 'NULL' }})</span>
+                                @endif
+                            </p>
                         </div>
-                        @if($ticket->usuario && $ticket->usuario->email)
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <p class="text-sm text-gray-900">{{ $ticket->usuario->email }}</p>
-                            </div>
-                        @endif
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Área</label>
-                            <p class="text-sm text-gray-900">{{ $ticket->area->nombre ?? 'No especificada' }}</p>
+                            <p class="text-sm text-gray-900">
+                                @if($ticket->area)
+                                    {{ $ticket->area->area }}
+                                @else
+                                    <span class="text-red-500">No hay área asociada (area_id: {{ $ticket->area_id ?? 'NULL' }})</span>
+                                @endif
+                            </p>
                         </div>
                         @if($ticket->subarea)
                             <div>
@@ -336,16 +337,11 @@
                     </a>
 
                     @if($ticket->status && $ticket->status->status !== 'Resuelto')
-                        <form action="{{ route('tickets.markAsResolved', $ticket->id) }}" method="POST">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" 
-                                    onclick="return confirm('¿Estás seguro de que quieres marcar este ticket como resuelto?')"
-                                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
-                                <i class="fas fa-check mr-2"></i>
-                                Marcar como Resuelto
-                            </button>
-                        </form>
+                        <a href="{{ route('tickets.completado', $ticket->id) }}" 
+                           class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
+                            <i class="fas fa-check mr-2"></i>
+                            Marcar como Resuelto
+                        </a>
                     @endif
 
                     <button type="button" 

@@ -8,7 +8,7 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <a href="{{ route('tickets.index', $ticket->id) }}" 
+                <a href="{{ route('tickets.show', $ticket->id) }}" 
                     class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Volver
@@ -201,7 +201,7 @@
                                     <option value="">Seleccione un área</option>
                                     @foreach($areas as $area)
                                         <option value="{{ $area->id }}" {{ $ticket->area_id == $area->id ? 'selected' : '' }}>
-                                            {{ $area->nombre }}
+                                            {{ $area->area }}
                                         </option>
                                     @endforeach
                                 </select>

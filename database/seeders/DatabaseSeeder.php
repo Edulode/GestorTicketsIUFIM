@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
             StatusSeeder::class,
             TecnicoSeeder::class,
             UsuarioSeeder::class,
-            UserSeeder::class, // Agregar el seeder de usuarios para login
+            UserSeeder::class,
         ]);
     }
 }

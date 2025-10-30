@@ -28,7 +28,11 @@
                     <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
                     <div>
                         <p class="text-sm font-medium text-blue-900">Ciclo Actual</p>
-                        <p class="text-lg font-bold text-blue-700">{{ $cicloActual->ciclo }}</p>
+                        @if($cicloActual)
+                            <p class="text-lg font-bold text-blue-700">{{ $cicloActual->ciclo }}</p>
+                        @else
+                            <p class="text-lg font-bold text-gray-500">No hay ciclo definido</p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -86,6 +90,15 @@
     <form action="{{ route('tickets.store') }}" method="POST" class="space-y-8">
         @csrf
         
+        <!-- Campos ocultos con valores por defecto -->
+        @if($cicloActual)
+            <input type="hidden" name="ciclo_id" value="{{ $cicloActual->id }}">
+        @endif
+        <input type="hidden" name="fecha" value="{{ date('Y-m-d') }}">
+        <input type="hidden" name="status_id" value="1">
+        <input type="hidden" name="tipo_id" value="1">
+        <input type="hidden" name="asunto_id" value="1">
+        
         <!-- Información del Usuario -->
         <div class="bg-white shadow rounded-lg">
             <div class="px-6 py-4 border-b border-gray-200">
@@ -131,7 +144,7 @@
                             <option value="">Seleccione un área</option>
                             @foreach($areas as $area)
                                 <option value="{{ $area->id }}" {{ old('area_id') == $area->id ? 'selected' : '' }}>
-                                    {{ $area->nombre }}
+                                    {{ $area->area }}
                                 </option>
                             @endforeach
                         </select>
@@ -223,6 +236,133 @@
         </div>
     </form>
 </div>
+
+<style>
+/* Menús desplegables compactos limitados a área pequeña */
+.select-container {
+    position: relative;
+}
+
+/* Indicador de búsqueda */
+.search-indicator {
+    position: absolute;
+    top: -25px;
+    left: 0;
+    background-color: #1f2937;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 1001;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.search-indicator.show {
+    opacity: 1;
+}
+
+select {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Estado normal del select */
+select:not([data-expanded="true"]) {
+    height: 42px;
+    overflow: hidden;
+}
+
+/* Estado expandido - área pequeña y compacta */
+select[data-expanded="true"] {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1000 !important;
+    background-color: white !important;
+    border: 2px solid #3b82f6 !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1) !important;
+    max-height: 250px !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    size: 8 !important;
+    padding: 4px !important;
+}
+
+/* Estilo mejorado para las opciones */
+select option {
+    padding: 8px 12px;
+    background-color: white;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+select option:hover {
+    background-color: #f8fafc !important;
+    color: #1f2937 !important;
+}
+
+select option:checked,
+select option:selected {
+    background-color: #3b82f6 !important;
+    color: white !important;
+    font-weight: 500;
+}
+
+/* Scroll bar personalizada */
+select::-webkit-scrollbar {
+    width: 6px;
+}
+
+select::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+select::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+select::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Animación suave para la expansión */
+select.expanding {
+    animation: expandSelect 0.2s ease-out;
+}
+
+select.collapsing {
+    animation: collapseSelect 0.2s ease-in;
+}
+
+@keyframes expandSelect {
+    from {
+        max-height: 42px;
+        box-shadow: none;
+    }
+    to {
+        max-height: 250px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+    }
+}
+
+@keyframes collapseSelect {
+    from {
+        max-height: 250px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+    }
+    to {
+        max-height: 42px;
+        box-shadow: none;
+    }
+}
+</style>
 
 <!-- Script para mejorar la UX del formulario -->
 <script>
@@ -411,6 +551,205 @@ document.addEventListener('DOMContentLoaded', function() {
         solicitudTextarea.addEventListener('input', updateCounter);
         updateCounter();
     }
+
+    // Función para manejar menús desplegables compactos
+    function setupCompactSelects() {
+        const selects = document.querySelectorAll('select');
+        
+        selects.forEach(select => {
+            // Envolver cada select en un contenedor si no lo tiene
+            if (!select.parentElement.classList.contains('select-container')) {
+                const container = document.createElement('div');
+                container.className = 'select-container';
+                select.parentElement.insertBefore(container, select);
+                container.appendChild(select);
+            }
+            
+            // Crear indicador de búsqueda
+            const searchIndicator = document.createElement('div');
+            searchIndicator.className = 'search-indicator';
+            searchIndicator.textContent = 'Buscando...';
+            select.parentElement.appendChild(searchIndicator);
+            
+            const optionCount = select.options.length;
+            
+            // Aplicar a selects con más de 3 opciones o específicamente al select de lugar de incidencia
+            if (optionCount > 3 || select.id === 'subarea_id') {
+                let isExpanded = false;
+                let searchString = '';
+                let searchTimeout;
+                
+                // Al hacer clic, expandir de forma compacta
+                select.addEventListener('mousedown', function(e) {
+                    if (!isExpanded) {
+                        e.preventDefault();
+                        expandSelect(this);
+                        isExpanded = true;
+                    }
+                });
+                
+                // Manejar la búsqueda por teclado sin seleccionar automáticamente
+                select.addEventListener('keydown', function(e) {
+                    // Si es una letra, número o espacio, agregar a la búsqueda
+                    if (e.key.length === 1 && /[a-zA-Z0-9\s]/.test(e.key)) {
+                        e.preventDefault(); // Prevenir selección automática
+                        
+                        searchString += e.key.toLowerCase();
+                        
+                        // Limpiar timeout anterior
+                        clearTimeout(searchTimeout);
+                        
+                        // Buscar coincidencias
+                        highlightMatch(this, searchString);
+                        
+                        // Mostrar indicador de búsqueda
+                        showSearchIndicator(this, searchString);
+                        
+                        // Limpiar búsqueda después de 1 segundo
+                        searchTimeout = setTimeout(() => {
+                            searchString = '';
+                            hideSearchIndicator(this);
+                        }, 1000);
+                        
+                        return false;
+                    }
+                    
+                    // Permitir navegación con flechas
+                    if (['ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) {
+                        // Comportamiento normal de navegación
+                        return true;
+                    }
+                    
+                    // Enter para seleccionar
+                    if (e.key === 'Enter') {
+                        this.dispatchEvent(new Event('change'));
+                        collapseSelect(this);
+                        isExpanded = false;
+                        searchString = '';
+                        hideSearchIndicator(this);
+                    }
+                    
+                    // Escape para cerrar
+                    if (e.key === 'Escape') {
+                        collapseSelect(this);
+                        isExpanded = false;
+                        searchString = '';
+                        hideSearchIndicator(this);
+                        this.blur();
+                    }
+                    
+                    // Backspace para borrar búsqueda
+                    if (e.key === 'Backspace') {
+                        e.preventDefault();
+                        searchString = searchString.slice(0, -1);
+                        if (searchString) {
+                            highlightMatch(this, searchString);
+                        }
+                    }
+                });
+                
+                // Al hacer clic en una opción, cerrar
+                select.addEventListener('change', function() {
+                    collapseSelect(this);
+                    isExpanded = false;
+                    searchString = '';
+                    hideSearchIndicator(this);
+                });
+                
+                // Cerrar al perder el foco
+                select.addEventListener('blur', function() {
+                    setTimeout(() => {
+                        collapseSelect(this);
+                        isExpanded = false;
+                        searchString = '';
+                        hideSearchIndicator(this);
+                    }, 150);
+                });
+            }
+        });
+        
+        // Función para mostrar indicador de búsqueda
+        function showSearchIndicator(select, searchStr) {
+            const indicator = select.parentElement.querySelector('.search-indicator');
+            if (indicator) {
+                indicator.textContent = `Buscando: "${searchStr}"`;
+                indicator.classList.add('show');
+            }
+        }
+        
+        // Función para ocultar indicador de búsqueda
+        function hideSearchIndicator(select) {
+            const indicator = select.parentElement.querySelector('.search-indicator');
+            if (indicator) {
+                indicator.classList.remove('show');
+            }
+        }
+        
+        // Función para resaltar coincidencias sin seleccionar
+        function highlightMatch(select, searchStr) {
+            const options = Array.from(select.options);
+            let foundIndex = -1;
+            
+            // Buscar la primera coincidencia desde el inicio del texto
+            for (let i = 0; i < options.length; i++) {
+                const optionText = options[i].text.toLowerCase();
+                if (optionText.startsWith(searchStr)) {
+                    foundIndex = i;
+                    break;
+                }
+            }
+            
+            // Si encuentra coincidencia, hacer scroll para mostrarla pero no seleccionarla
+            if (foundIndex !== -1) {
+                const option = options[foundIndex];
+                option.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                
+                // Resaltar visualmente sin seleccionar
+                options.forEach(opt => opt.style.backgroundColor = '');
+                option.style.backgroundColor = '#e0f2fe';
+                
+                // Limpiar resaltado después de un momento
+                setTimeout(() => {
+                    option.style.backgroundColor = '';
+                }, 800);
+            }
+        }
+        
+        function expandSelect(select) {
+            select.setAttribute('data-expanded', 'true');
+            select.classList.add('expanding');
+            select.setAttribute('size', '8');
+            select.focus();
+            
+            setTimeout(() => {
+                select.classList.remove('expanding');
+            }, 200);
+        }
+        
+        function collapseSelect(select) {
+            select.classList.add('collapsing');
+            
+            setTimeout(() => {
+                select.removeAttribute('data-expanded');
+                select.removeAttribute('size');
+                select.classList.remove('collapsing');
+            }, 200);
+        }
+        
+        // Cerrar cualquier select abierto al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('select')) {
+                selects.forEach(select => {
+                    if (select.getAttribute('data-expanded') === 'true') {
+                        collapseSelect(select);
+                    }
+                });
+            }
+        });
+    }
+    
+    // Inicializar selects compactos
+    setupCompactSelects();
 });
 </script>
 @endsection

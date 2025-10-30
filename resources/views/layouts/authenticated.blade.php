@@ -41,15 +41,18 @@
                             <i class="fas fa-list mr-2"></i>
                             Tickets
                         </a>
-                        <a href="{{ route('admin.dashboard')}}" 
-                           class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.dashboard') ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} text-sm font-medium transition-colors duration-200">
+
+                        <a href="{{ route('reportes.index') }}" 
+                           class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('reportes.index') ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} text-sm font-medium transition-colors duration-200">
                             <i class="fas fa-chart-bar mr-2"></i>
-                            Estadísticas
+                            Reportes
                         </a>
-                        <a href="{{ route('admin.index') }}" 
+
+
+                         <a href="{{ route('admin.index') }}" 
                            class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.index') ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} text-sm font-medium transition-colors duration-200">
-                            <i class="fas fa-cogs mr-2"></i>
-                            Base de datos
+                            <i class="fas fa-plus mr-2"></i>
+                            Base de Datos
                         </a>
                     </div>
                     
@@ -106,19 +109,20 @@
             <div id="mobile-menu" class="hidden sm:hidden">
                 <div class="pt-2 pb-3 space-y-1">
                     <a href="{{ route('tickets.index') }}" 
-                       class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('tickets.index') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition-colors duration-200">
+                       class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('tickets.*') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition-colors duration-200">
                         <i class="fas fa-list mr-2"></i>
                         Tickets
                     </a>
-                    <a href="{{ route('admin.dashboard') }}" 
-                       class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('tickets.create') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition-colors duration-200">
-                        <i class="fas fa-plus mr-2"></i>
-                        Estadísticas
-                    </a>
-                    <a href="{{ route('admin.index') }}" 
-                       class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300 text-base font-medium transition-colors duration-200">
+                    <a href="{{ route('reportes.index') }}" 
+                       class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('reportes.*') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition-colors duration-200">
                         <i class="fas fa-chart-bar mr-2"></i>
-                        Base de datos
+                        Reportes
+                    </a>
+                    
+                    <a href="{{ route('admin.index') }}" 
+                       class="block pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.*') ? 'border-blue-500 text-blue-700 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300' }} text-base font-medium transition-colors duration-200">
+                        <i class="fas fa-plus mr-2"></i>
+                        Base de Datos
                     </a>
                 </div>
                 <div class="pt-4 pb-3 border-t border-gray-200">
@@ -132,6 +136,14 @@
                         </div>
                     </div>
                     <div class="mt-3 space-y-1">
+                        <a href="#" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                            <i class="fas fa-user mr-2"></i>
+                            Mi Perfil
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                            <i class="fas fa-cog mr-2"></i>
+                            Configuración
+                        </a>
                         <form method="POST" action="{{ route('logout') }}" class="block">
                             @csrf
                             <button type="submit" class="w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
