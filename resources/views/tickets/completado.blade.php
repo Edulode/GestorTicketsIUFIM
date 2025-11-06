@@ -99,7 +99,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Fecha de Creación</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ $ticket->created_at->format('d/m/Y H:i') }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ $ticket->created_at ? $ticket->created_at->format('d/m/Y H:i') : 'No disponible' }}</p>
                 </div>
                 <div class="md:col-span-2 lg:col-span-3">
                     <label class="block text-sm font-medium text-gray-700">Solicitud Original</label>

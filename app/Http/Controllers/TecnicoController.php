@@ -9,7 +9,7 @@ class TecnicoController extends Controller
 {
     public function index()
     {
-        $tecnicos = Tecnico::all();
+        $tecnicos = Tecnico::with('tickets')->orderBy('created_at', 'desc')->paginate(15);
         return view('tecnicos.index', compact('tecnicos'));
     }
 
@@ -31,7 +31,7 @@ class TecnicoController extends Controller
 
     public function show(string $id)
     {
-        $tecnico = Tecnico::findOrFail($id);
+        $tecnico = Tecnico::with(['tickets.status', 'tickets.usuario'])->findOrFail($id);
         return view('tecnicos.show', compact('tecnico'));
     }
 

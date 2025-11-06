@@ -136,7 +136,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $ticket->created_at->format('d/m/Y H:i') }}
+                                    {{ $ticket->created_at ? $ticket->created_at->format('d/m/Y H:i') : 'No disponible' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <a href="{{ route('tickets.show', $ticket->id) }}" class="text-blue-600 hover:text-blue-900">Ver</a>

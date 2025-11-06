@@ -14,7 +14,7 @@ class TecnicoSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('tecnicos')->insert([
+        $tecnicos = [
             ['nombre' => 'Jennifer', 'apellidoP' => ' ', 'apellidoM' => ' '],
             ['nombre' => 'Nora', 'apellidoP' => ' ', 'apellidoM' => ' '],
             ['nombre' => 'Tomás', 'apellidoP' => ' ', 'apellidoM' => ' '],
@@ -24,6 +24,15 @@ class TecnicoSeeder extends Seeder
             ['nombre' => 'Jennifer', 'apellidoP' => 'y', 'apellidoM' => 'Juan'],
             ['nombre' => 'Rafael', 'apellidoP' => ' ', 'apellidoM' => ' '],
             ['nombre' => 'Adrián', 'apellidoP' => 'Salvador ', 'apellidoM' => ' '],
-        ]);
+        ];
+
+        foreach ($tecnicos as $tecnicoData) {
+            Tecnico::create([
+                'nombre' => $tecnicoData['nombre'],
+                'apellidoP' => $tecnicoData['apellidoP'],
+                'apellidoM' => $tecnicoData['apellidoM'],
+                'status' => true
+            ]);
+        }
     }
 }
