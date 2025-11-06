@@ -180,6 +180,17 @@
                         </div>
                     </div>
                 </a>
+
+                <a href="{{ route('admin.administradores.index') }}" 
+                   class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center">
+                        <i class="fas fa-users-cog text-orange-500 text-xl mr-3"></i>
+                        <div>
+                            <h4 class="font-medium text-gray-900">Administradores</h4>
+                            <p class="text-sm text-gray-500">Cuentas de acceso al sistema</p>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
     </div>

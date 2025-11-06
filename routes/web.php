@@ -45,6 +45,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     
+    // CRUD de Administradores
+    Route::get('/admin/administradores', [AdminController::class, 'adminIndex'])->name('admin.administradores.index');
+    Route::get('/admin/administradores/create', [AdminController::class, 'adminCreate'])->name('admin.administradores.create');
+    Route::post('/admin/administradores', [AdminController::class, 'adminStore'])->name('admin.administradores.store');
+    Route::get('/admin/administradores/{id}', [AdminController::class, 'adminShow'])->name('admin.administradores.show');
+    Route::get('/admin/administradores/{id}/edit', [AdminController::class, 'adminEdit'])->name('admin.administradores.edit');
+    Route::put('/admin/administradores/{id}', [AdminController::class, 'adminUpdate'])->name('admin.administradores.update');
+    Route::delete('/admin/administradores/{id}', [AdminController::class, 'adminDestroy'])->name('admin.administradores.destroy');
+    
     Route::resource('usuarios', UsuariosController::class);
     Route::resource('areas', AreasController::class);
     Route::resource('categorias-servicio', CategoriaServicioController::class);

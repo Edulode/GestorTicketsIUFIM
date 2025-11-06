@@ -48,9 +48,8 @@
                             Reportes
                         </a>
 
-
                          <a href="{{ route('admin.index') }}" 
-                           class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.index') ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} text-sm font-medium transition-colors duration-200">
+                           class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('admin.*') ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} text-sm font-medium transition-colors duration-200">
                             <i class="fas fa-plus mr-2"></i>
                             Base de Datos
                         </a>
