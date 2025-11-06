@@ -58,7 +58,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate text-center">Total Tickets</dt>
-                            <dd class="text-lg font-medium text-gray-900 text-center">{{ $tickets->count() }}</dd>
+                            <dd class="text-lg font-medium text-gray-900 text-center">{{ $totalTickets }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -76,7 +76,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate text-center">Pendientes</dt>
-                            <dd class="text-lg font-medium text-gray-900 text-center">{{ $tickets->filter(function($ticket) { return $ticket->status && $ticket->status->status === 'Pendiente'; })->count() }}</dd>
+                            <dd class="text-lg font-medium text-gray-900 text-center">{{ $pendientesCount }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -94,7 +94,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate text-center">Resueltos</dt>
-                            <dd class="text-lg font-medium text-gray-900 text-center">{{ $tickets->filter(function($ticket) { return $ticket->status && $ticket->status->status === 'Resuelto'; })->count() }}</dd>
+                            <dd class="text-lg font-medium text-gray-900 text-center">{{ $resueltosCount }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -264,9 +264,13 @@
                                     @endif
                                 </td>
                                 <td class="px-8 py-4 whitespace-nowrap text-lg font-medium">
-                                    <div class="flex space-x-2">
-                                        <a href="{{ route('tickets.show', $ticket->id) }}" class="text-blue-600 hover:text-blue-900">Ver</a>
-                                        <a href="{{ route('tickets.edit', $ticket->id) }}" class="text-green-600 hover:text-green-900">Editar</a>
+                                    <div class="flex space-x-3">
+                                        <a href="{{ route('tickets.show', $ticket->id) }}" class="text-blue-600 hover:text-blue-900 transition-colors duration-200" title="Ver detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ route('tickets.edit', $ticket->id) }}" class="text-green-600 hover:text-green-900 transition-colors duration-200" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -275,13 +279,15 @@
                 </table>
             </div>
             
-            <!-- Pagination (si necesitas) -->
+            <!-- Pagination -->
             <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
                 <div class="flex justify-between items-center">
                     <div class="text-sm text-gray-700">
-                        Mostrando <span class="font-medium">{{ $tickets->count() }}</span> tickets
+                        Mostrando <span class="font-medium">{{ $tickets->firstItem() ?? 0 }}</span> a <span class="font-medium">{{ $tickets->lastItem() ?? 0 }}</span> de <span class="font-medium">{{ $tickets->total() }}</span> tickets
                     </div>
-                    {{-- Aquí puedes agregar paginación si la implementas --}}
+                    <div>
+                        {{ $tickets->links() }}
+                    </div>
                 </div>
             </div>
         @else
@@ -432,7 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </span>
                 </td>
                 <td class="px-8 py-4 whitespace-nowrap text-lg font-medium">
-                    <div class="flex space-x-2">
+                    <div class="flex space-x-3">
                         <a href="${ticket.show_url}" class="text-blue-600 hover:text-blue-900 transition-colors duration-200" title="Ver detalles">
                             <i class="fas fa-eye"></i>
                         </a>

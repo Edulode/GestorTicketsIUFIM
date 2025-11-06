@@ -269,6 +269,7 @@ class ReportesController extends Controller
                 )
                 ->where('statuses.status', 'Pendiente')
                 ->orderBy('tickets.created_at', 'asc')
+                ->limit(20)
                 ->get()
                 ->map(function($ticket) {
                     return [

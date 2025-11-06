@@ -267,6 +267,10 @@
                 <i class="fas fa-exclamation-triangle mr-2 text-yellow-600 bg-white p-1 rounded-full shadow"></i>
                 Tickets Pendientes de Resolución
             </h3>
+            <p class="text-sm text-yellow-700 mt-2">
+                <i class="fas fa-info-circle mr-1"></i>
+                Mostrando los 20 tickets pendientes más antiguos ordenados por fecha de creación
+            </p>
         </div>
         <div class="p-6 bg-yellow-50/20">
             <div id="tickets-pendientes-container">

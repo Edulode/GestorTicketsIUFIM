@@ -18,9 +18,21 @@ class TicketController extends Controller
 {
     public function index()
     {
-        $tickets = Ticket::with(['area', 'usuario', 'status'])->get();
+        $tickets = Ticket::with(['area', 'usuario', 'status'])
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(20);
         $areas = Area::orderBy('area')->get();
-        return view('tickets.index', compact('tickets', 'areas'));
+        
+        // Estadísticas totales
+        $totalTickets = Ticket::count();
+        $pendientesCount = Ticket::whereHas('status', function($q) {
+            $q->where('status', 'Pendiente');
+        })->count();
+        $resueltosCount = Ticket::whereHas('status', function($q) {
+            $q->where('status', 'Resuelto');
+        })->count();
+        
+        return view('tickets.index', compact('tickets', 'areas', 'totalTickets', 'pendientesCount', 'resueltosCount'));
     }
 
     /**
@@ -60,15 +72,44 @@ class TicketController extends Controller
             });
         }
 
-        $tickets = $query->orderBy('created_at', 'desc')->get();
+        $tickets = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        // Calculate stats
-        $total = $tickets->count();
-        $pendientes = $tickets->filter(function($ticket) {
-            return $ticket->status && $ticket->status->status === 'Pendiente';
+        // Calculate stats (totales, no solo de la página actual)
+        $baseQuery = Ticket::query();
+        
+        // Aplicar los mismos filtros para estadísticas
+        if ($request->filled('status')) {
+            $baseQuery->whereHas('status', function($q) use ($request) {
+                $q->where('status', $request->status);
+            });
+        }
+        if ($request->filled('area')) {
+            $baseQuery->where('area_id', $request->area);
+        }
+        if ($request->filled('date')) {
+            $baseQuery->whereDate('created_at', $request->date);
+        }
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $baseQuery->where(function($q) use ($searchTerm) {
+                $q->where('solicitud', 'like', "%{$searchTerm}%")
+                  ->orWhereHas('usuario', function($subQ) use ($searchTerm) {
+                      $subQ->where('nombre', 'like', "%{$searchTerm}%")
+                           ->orWhere('apellido_paterno', 'like', "%{$searchTerm}%")
+                           ->orWhere('apellido_materno', 'like', "%{$searchTerm}%");
+                  })
+                  ->orWhereHas('area', function($subQ) use ($searchTerm) {
+                      $subQ->where('area', 'like', "%{$searchTerm}%");
+                  });
+            });
+        }
+
+        $total = $baseQuery->count();
+        $pendientes = (clone $baseQuery)->whereHas('status', function($q) {
+            $q->where('status', 'Pendiente');
         })->count();
-        $completados = $tickets->filter(function($ticket) {
-            return $ticket->status && $ticket->status->status === 'Resuelto';
+        $completados = (clone $baseQuery)->whereHas('status', function($q) {
+            $q->where('status', 'Resuelto');
         })->count();
 
         // Format tickets for JSON response
