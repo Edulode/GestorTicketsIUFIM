@@ -3,6 +3,9 @@
 ## 📋 **RESUMEN EJECUTIVO**
 Esta guía te permitirá instalar el sistema de gestión de tickets en un equipo completamente limpio y configurarlo para funcionar automáticamente en red local cada vez que se encienda el equipo.
 
+Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
+Remove-Item package-lock.json -ErrorAction SilentlyContinue
+
 ---
 
 ## 🎯 **FASE 1: PREPARACIÓN DEL EQUIPO (DESDE CERO)**
@@ -579,10 +582,58 @@ icacls storage /grant Users:F /T
 icacls bootstrap\cache /grant Users:F /T
 ```
 
-### **Problema 4: Assets no cargan (CSS/JS)**
+### **Problema 4: Assets no cargan (CSS/JS) - Pantalla sin estilos**
+**Síntomas:** Página se ve sin estilos, elementos alineados a la izquierda, login en blanco
+
 ```cmd
+# PASO 1: Verificar política de ejecución de PowerShell
+Get-ExecutionPolicy
+# Si muestra "Restricted", ejecutar como Administrador:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force
+
+# PASO 2: Cerrar y abrir nueva ventana PowerShell normal (NO admin)
+# Navegar al proyecto
+cd C:\webprojects\GestorTicketsIUFIM
+
+# PASO 3: Verificar Node.js y npm
+node --version
+npm --version
+
+# PASO 4: Instalar dependencias Node.js
+npm install
+
+# PASO 5: Compilar assets
 npm run build
+
+# PASO 6: Crear enlace simbólico para archivos
 php artisan storage:link
+
+# PASO 7: Limpiar cachés
+php artisan config:clear
+php artisan cache:clear  
+php artisan view:clear
+
+# PASO 8: Verificar permisos de carpetas
+icacls public\build /grant Everyone:F /T
+
+# PASO 9: Reiniciar servidor Laravel
+# Detener servidor (Ctrl+C si está corriendo)
+# Iniciar nuevamente:
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+**Si persiste el problema:**
+```cmd
+# Eliminar node_modules y package-lock.json
+rmdir /s node_modules
+del package-lock.json
+
+# Reinstalar todo
+npm install
+npm run build
+
+# Verificar que se crearon los archivos en public/build/
+dir public\build
 ```
 
 ---
